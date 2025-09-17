@@ -1,16 +1,13 @@
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
     repositories {
-        google {
-            content {
-                includeGroupByRegex("com\\.android.*")
-                includeGroupByRegex("com\\.google.*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
+        google()
         mavenCentral()
         gradlePluginPortal()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -19,5 +16,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SG-Future-Nursing-App"
+rootProject.name = "SGFutureNursingApp"
 include(":app")
