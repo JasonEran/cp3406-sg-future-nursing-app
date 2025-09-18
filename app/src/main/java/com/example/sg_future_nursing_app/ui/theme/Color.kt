@@ -1,4 +1,4 @@
-package com.jasoneran.cp3406_sg_future_nursing_app.ui.theme
+package com.example.sg_future_nursing_app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

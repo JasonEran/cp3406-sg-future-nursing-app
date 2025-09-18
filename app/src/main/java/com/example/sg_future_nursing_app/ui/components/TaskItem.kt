@@ -1,4 +1,4 @@
-package com.jasoneran.cp3406_sg_future_nursing_app.ui.components
+package com.example.sg_future_nursing_app.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -9,10 +9,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.jasoneran.cp3406_sg_future_nursing_app.ui.data.DummyDataProvider
-import com.jasoneran.cp3406_sg_future_nursing_app.ui.data.Task
-import com.jasoneran.cp3406_sg_future_nursing_app.ui.theme.CP3406SGFutureNursingAppTheme
-import com.jasoneran.cp3406_sg_future_nursing_app.ui.theme.SuccessGreen
+import com.example.sg_future_nursing_app.ui.data.DummyDataProvider
+import com.example.sg_future_nursing_app.ui.data.Task
+import com.example.sg_future_nursing_app.ui.theme.CP3406SGFutureNursingAppTheme
+import com.example.sg_future_nursing_app.ui.theme.SuccessGreen
 
 @Composable
 fun TaskItem(task: Task, modifier: Modifier = Modifier) {
@@ -42,7 +42,7 @@ fun TaskItem(task: Task, modifier: Modifier = Modifier) {
                     tint = SuccessGreen
                 )
             } else {
-                OutlinedButton(onClick = { /*  */ }) {
+                OutlinedButton(onClick = { /* TODO */ }) {
                     Text("Complete")
                 }
             }

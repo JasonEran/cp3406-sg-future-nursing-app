@@ -1,11 +1,9 @@
 package com.example.sg_future_nursing_app.ui.data
 
-package com.jasoneran.cp3406_sg_future_nursing_app.ui.data
-
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.MonitorHeart
-import androidx.compose.material.icons.filled.Event
 
 object DummyDataProvider {
     val tasks = listOf(
