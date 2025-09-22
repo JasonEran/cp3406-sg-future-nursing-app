@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-// 定义仪表盘UI的状态
+// Define the status of the dashboard UI
 data class DashboardUiState(
     val tasks: List<Task> = emptyList(),
     val userName: String = "Mark"
@@ -17,7 +17,7 @@ data class DashboardUiState(
 
 class DashboardViewModel : ViewModel() {
 
-    // 直接从Repository中观察并转换数据流
+    // Directly observe and transform data streams from the Repository
     val uiState: StateFlow<DashboardUiState> =
         TaskRepository.tasks.map { tasks ->
             DashboardUiState(tasks = tasks)
@@ -28,7 +28,7 @@ class DashboardViewModel : ViewModel() {
         )
 
     fun completeTask(taskId: Int) {
-        // 将操作委托给Repository
+        // Delegate the operation to the Repository
         TaskRepository.completeTask(taskId)
     }
 }

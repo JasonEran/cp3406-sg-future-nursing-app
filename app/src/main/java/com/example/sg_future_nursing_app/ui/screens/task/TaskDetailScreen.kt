@@ -57,7 +57,7 @@ fun TaskDetailScreen(
                     Text(statusText, style = MaterialTheme.typography.bodyLarge, color = statusColor)
                 }
 
-                // 如果任务未完成，显示按钮
+                // If the task is not completed, display the button
                 if (!task!!.isCompleted) {
                     Button(
                         onClick = { viewModel.completeTask() },

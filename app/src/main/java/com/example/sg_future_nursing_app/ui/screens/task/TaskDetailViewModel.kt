@@ -14,16 +14,16 @@ class TaskDetailViewModel : ViewModel() {
     fun loadTask(taskId: String?) {
         val id = taskId?.toIntOrNull()
         if (id != null) {
-            // 从Repository获取任务
+            // Retrieve tasks from the Repository
             _task.value = TaskRepository.getTaskById(id)
         }
     }
 
     fun completeTask() {
-        // 确保任务不为空时才执行
+        // Ensure that the task is not empty before execution
         _task.value?.let { currentTask ->
             TaskRepository.completeTask(currentTask.id)
-            // 更新本地状态以立即反映UI变化
+            // Update local status to immediately reflect UI changes
             _task.value = currentTask.copy(isCompleted = true)
         }
     }

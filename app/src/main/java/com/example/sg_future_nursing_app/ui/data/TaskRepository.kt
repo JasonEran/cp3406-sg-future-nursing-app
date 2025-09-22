@@ -5,15 +5,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-// 使用单例 Object 来确保整个 App 只有一个数据源
+// Use singleton objects to ensure that the entire app has only one data source
 object TaskRepository {
 
-    // 使用 MutableStateFlow 来保存可被观察的任务列表
+    // Use MutableStateFlow to save a list of observable tasks
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
 
     init {
-        // 初始化时加载假数据
+        // Load fake data during initialization
         _tasks.value = DummyDataProvider.tasks
     }
 
@@ -25,7 +25,7 @@ object TaskRepository {
         _tasks.update { currentTasks ->
             currentTasks.map { task ->
                 if (task.id == taskId) {
-                    // 创建一个新的Task对象并更新其isCompleted状态
+                    // Create a new Task object and update its isCompleted status
                     task.copy(isCompleted = true)
                 } else {
                     task
