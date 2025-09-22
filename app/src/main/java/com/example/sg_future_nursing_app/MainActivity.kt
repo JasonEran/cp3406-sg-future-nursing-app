@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.example.sg_future_nursing_app.ui.screens.dashboard.DashboardScreen
+import com.example.sg_future_nursing_app.ui.navigation.AppNavigation
 import com.example.sg_future_nursing_app.ui.theme.CP3406SGFutureNursingAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    DashboardScreen()
+                    AppNavigation() // <-- Call the navigation component
                 }
             }
         }
