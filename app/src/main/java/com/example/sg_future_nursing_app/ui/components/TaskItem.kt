@@ -15,7 +15,11 @@ import com.example.sg_future_nursing_app.ui.theme.CP3406SGFutureNursingAppTheme
 import com.example.sg_future_nursing_app.ui.theme.SuccessGreen
 
 @Composable
-fun TaskItem(task: Task, modifier: Modifier = Modifier) {
+fun TaskItem(
+    task: Task,
+    modifier: Modifier = Modifier,
+    onCompleteClick: (Int) -> Unit // Add this parameter
+) {
     Card(
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -42,7 +46,7 @@ fun TaskItem(task: Task, modifier: Modifier = Modifier) {
                     tint = SuccessGreen
                 )
             } else {
-                OutlinedButton(onClick = { /* TODO */ }) {
+                OutlinedButton(onClick = { onCompleteClick(task.id) }) { // Modify here
                     Text("Complete")
                 }
             }
@@ -54,6 +58,7 @@ fun TaskItem(task: Task, modifier: Modifier = Modifier) {
 @Composable
 fun TaskItemPreview() {
     CP3406SGFutureNursingAppTheme {
-        TaskItem(task = DummyDataProvider.tasks.first())
+        // Update preview to match new function signature
+        TaskItem(task = DummyDataProvider.tasks.first(), onCompleteClick = {})
     }
 }
