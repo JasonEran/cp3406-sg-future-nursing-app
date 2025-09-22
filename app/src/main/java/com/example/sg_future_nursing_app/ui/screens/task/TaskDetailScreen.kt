@@ -8,9 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.sg_future_nursing_app.ui.theme.SuccessGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -19,7 +21,6 @@ fun TaskDetailScreen(
     onNavigateUp: () -> Unit,
     viewModel: TaskDetailViewModel = viewModel()
 ) {
-    // When taskId changes, let the VNet load data
     LaunchedEffect(taskId) {
         viewModel.loadTask(taskId)
     }
@@ -38,20 +39,35 @@ fun TaskDetailScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(16.dp)
         ) {
             if (task != null) {
-                Text("Category: ${task!!.category}", style = MaterialTheme.typography.titleLarge)
-                Text("Time: ${task!!.time}", style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    if (task!!.isCompleted) "Status: Completed" else "Status: Pending",
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text("Category: ${task!!.category}", style = MaterialTheme.typography.titleLarge)
+                    Text("Time: ${task!!.time}", style = MaterialTheme.typography.bodyLarge)
+                    val statusText = if (task!!.isCompleted) "Status: Completed" else "Status: Pending"
+                    val statusColor = if (task!!.isCompleted) SuccessGreen else LocalContentColor.current
+                    Text(statusText, style = MaterialTheme.typography.bodyLarge, color = statusColor)
+                }
+
+                // If the task is not completed, display the button
+                if (!task!!.isCompleted) {
+                    Button(
+                        onClick = { viewModel.completeTask() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                    ) {
+                        Text("Mark as Complete")
+                    }
+                }
             } else {
                 Text("Task not found.")
             }
