@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.sgfuturenursingapp.ui.data.news.NewsArticleEntity
 import com.example.sgfuturenursingapp.ui.data.news.NewsDao
 
-@Database(entities = [Task::class, NewsArticleEntity::class], version = 3, exportSchema = false)
+@Database(entities = [Task::class, NewsArticleEntity::class], version = 4, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun newsDao(): NewsDao
@@ -38,6 +38,15 @@ abstract class AppDatabase : RoomDatabase() {
                             PRIMARY KEY(url)
                         )
                         """.trimIndent(),
+                    )
+                }
+            }
+
+        val MIGRATION_3_4 =
+            object : Migration(3, 4) {
+                override fun migrate(database: SupportSQLiteDatabase) {
+                    database.execSQL(
+                        "ALTER TABLE tasks ADD COLUMN userId TEXT NOT NULL DEFAULT ''",
                     )
                 }
             }

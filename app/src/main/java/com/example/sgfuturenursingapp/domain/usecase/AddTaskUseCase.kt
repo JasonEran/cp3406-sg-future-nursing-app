@@ -28,8 +28,7 @@ class AddTaskUseCase
                     isCompleted = isCompleted,
                     priority = priority,
                 )
-            taskRepository.upsertTask(task)
-            return task
+            return taskRepository.upsertTask(task)
         }
 
         private companion object {

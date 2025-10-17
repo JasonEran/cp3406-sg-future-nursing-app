@@ -1,5 +1,6 @@
 package com.example.sgfuturenursingapp.ui.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -12,4 +13,5 @@ data class Task(
     val iconName: String,
     val isCompleted: Boolean,
     val priority: Int = 0,
+    @ColumnInfo(defaultValue = "") val userId: String = "",
 )
