@@ -3,6 +3,9 @@ package com.example.sg_future_nursing_app.ui.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,8 +33,9 @@ fun TaskItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            val displayIcon = iconForName(task.iconName)
             Icon(
-                imageVector = task.icon,
+                imageVector = displayIcon,
                 contentDescription = task.category,
                 tint = MaterialTheme.colorScheme.primary
             )
@@ -61,4 +65,11 @@ fun TaskItemPreview() {
         // Update preview to match new function signature
         TaskItem(task = DummyDataProvider.tasks.first(), onCompleteClick = {})
     }
+}
+
+private fun iconForName(iconName: String) = when (iconName) {
+    "medical_services" -> Icons.Filled.MedicalServices
+    "monitor_heart" -> Icons.Filled.MonitorHeart
+    "event" -> Icons.Filled.Event
+    else -> Icons.Filled.CheckCircle
 }
