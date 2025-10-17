@@ -15,6 +15,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -32,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.sgfuturenursingapp.BuildConfig
 
 @Composable
 fun LoginScreen(
@@ -54,6 +56,7 @@ fun LoginScreen(
         onEmailChanged = viewModel::onEmailChanged,
         onPasswordChanged = viewModel::onPasswordChanged,
         onLogin = viewModel::login,
+        onSkipLogin = onLoginSuccess,
         onNavigateToRegister = onNavigateToRegister,
         onNavigateToForgotPassword = onNavigateToForgotPassword,
         modifier = modifier,
@@ -66,6 +69,7 @@ private fun LoginScreenContent(
     onEmailChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onLogin: () -> Unit,
+    onSkipLogin: () -> Unit,
     onNavigateToRegister: () -> Unit,
     onNavigateToForgotPassword: () -> Unit,
     modifier: Modifier = Modifier,
@@ -119,6 +123,7 @@ private fun LoginScreenContent(
                 onEmailChanged = onEmailChanged,
                 onPasswordChanged = onPasswordChanged,
                 onSubmit = onLogin,
+                onSkipLogin = onSkipLogin,
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -155,6 +160,7 @@ private fun LoginForm(
     onEmailChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onSubmit: () -> Unit,
+    onSkipLogin: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
@@ -220,6 +226,19 @@ private fun LoginForm(
             }
             Text(text = if (uiState.isLoading) "Signing in..." else "Sign in")
         }
+
+        if (BuildConfig.DEBUG) {
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedButton(
+                onClick = {
+                    focusManager.clearFocus()
+                    onSkipLogin()
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(text = "跳过登录（开发用）")
+            }
+        }
     }
 }
 
@@ -231,6 +250,7 @@ private fun LoginScreenPreview() {
         onEmailChanged = {},
         onPasswordChanged = {},
         onLogin = {},
+        onSkipLogin = {},
         onNavigateToRegister = {},
         onNavigateToForgotPassword = {},
     )
