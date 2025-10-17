@@ -2,8 +2,9 @@ package com.example.sgfuturenursingapp.ui.screens.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.sgfuturenursingapp.domain.use_case.CompleteTaskUseCase
+import com.example.sgfuturenursingapp.domain.use_case.GetTasksUseCase
 import com.example.sgfuturenursingapp.ui.data.Task
-import com.example.sgfuturenursingapp.ui.data.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,12 +21,13 @@ data class DashboardUiState(
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    private val taskRepository: TaskRepository
+    private val getTasksUseCase: GetTasksUseCase,
+    private val completeTaskUseCase: CompleteTaskUseCase
 ) : ViewModel() {
 
     // Directly observe and transform data streams from the Repository
     val uiState: StateFlow<DashboardUiState> =
-        taskRepository.tasks.map { tasks ->
+        getTasksUseCase().map { tasks ->
             DashboardUiState(tasks = tasks)
         }.stateIn(
             scope = viewModelScope,
@@ -35,7 +37,7 @@ class DashboardViewModel @Inject constructor(
 
     fun completeTask(taskId: Int) {
         viewModelScope.launch {
-            taskRepository.completeTask(taskId)
+            completeTaskUseCase(taskId)
         }
     }
 }
