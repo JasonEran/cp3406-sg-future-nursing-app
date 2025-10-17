@@ -15,6 +15,8 @@ import com.example.sgfuturenursingapp.ui.screens.auth.LoginScreen
 import com.example.sgfuturenursingapp.ui.screens.auth.RegisterScreen
 import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardScreen
 import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardViewModel
+import com.example.sgfuturenursingapp.ui.screens.main.MainScreen
+import com.example.sgfuturenursingapp.ui.screens.news.HealthNewsScreen
 import com.example.sgfuturenursingapp.ui.screens.profile.ProfileScreen
 import com.example.sgfuturenursingapp.ui.screens.task.AddEditTaskScreen
 import com.example.sgfuturenursingapp.ui.screens.task.TaskDetailScreen
@@ -22,9 +24,11 @@ import com.example.sgfuturenursingapp.ui.screens.task.TaskDetailScreen
 // Define routing names for all screens
 object ScreenRoutes {
     const val LOGIN = "login"
+    const val MAIN = "main"
     const val REGISTER = "register"
     const val FORGOT_PASSWORD = "forgot_password"
     const val DASHBOARD = "dashboard"
+    const val HEALTH_NEWS = "health_news"
     const val TASK_DETAIL = "task_detail"
     const val PROFILE = "profile"
     const val ADD_EDIT_TASK = "add_edit_task"
@@ -50,7 +54,7 @@ fun AppNavigation() {
                     }
                 },
                 onLoginSuccess = {
-                    navController.navigate(ScreenRoutes.DASHBOARD) {
+                    navController.navigate(ScreenRoutes.MAIN) {
                         popUpTo(ScreenRoutes.LOGIN) { inclusive = true }
                         launchSingleTop = true
                     }
@@ -64,7 +68,7 @@ fun AppNavigation() {
                     navController.popBackStack(ScreenRoutes.LOGIN, inclusive = false)
                 },
                 onRegisterSuccess = {
-                    navController.navigate(ScreenRoutes.DASHBOARD) {
+                    navController.navigate(ScreenRoutes.MAIN) {
                         popUpTo(ScreenRoutes.LOGIN) { inclusive = true }
                         launchSingleTop = true
                     }
@@ -76,6 +80,10 @@ fun AppNavigation() {
             ForgotPasswordScreen(
                 onNavigateBack = { navController.popBackStack() },
             )
+        }
+
+        composable(ScreenRoutes.MAIN) {
+            MainScreen(navController = navController)
         }
 
         composable(ScreenRoutes.DASHBOARD) { backStackEntry ->
@@ -120,6 +128,10 @@ fun AppNavigation() {
             ProfileScreen(
                 onNavigateUp = { navController.navigateUp() },
             )
+        }
+
+        composable(ScreenRoutes.HEALTH_NEWS) {
+            HealthNewsScreen()
         }
 
         composable(

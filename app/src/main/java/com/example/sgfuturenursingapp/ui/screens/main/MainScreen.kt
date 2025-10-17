@@ -30,7 +30,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.sgfuturenursingapp.ui.theme.CP3406SGFutureNursingAppTheme
+import com.example.sgfuturenursingapp.ui.navigation.ScreenRoutes
+
+@Composable
+fun MainScreen(navController: NavController) {
+    MainScreen(
+        onCarePlanClick = {
+            navController.navigate(ScreenRoutes.DASHBOARD) {
+                launchSingleTop = true
+            }
+        },
+        onHealthNewsClick = {
+            navController.navigate(ScreenRoutes.HEALTH_NEWS) {
+                launchSingleTop = true
+            }
+        },
+    )
+}
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
