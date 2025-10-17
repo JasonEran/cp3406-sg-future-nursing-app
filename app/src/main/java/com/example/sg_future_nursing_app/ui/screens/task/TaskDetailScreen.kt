@@ -11,7 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.sg_future_nursing_app.ui.theme.SuccessGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -19,7 +19,7 @@ import com.example.sg_future_nursing_app.ui.theme.SuccessGreen
 fun TaskDetailScreen(
     taskId: String?,
     onNavigateUp: () -> Unit,
-    viewModel: TaskDetailViewModel = viewModel()
+    viewModel: TaskDetailViewModel = hiltViewModel()
 ) {
     LaunchedEffect(taskId) {
         viewModel.loadTask(taskId)

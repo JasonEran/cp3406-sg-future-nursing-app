@@ -1,36 +1,19 @@
 package com.example.sg_future_nursing_app.ui.data
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-// Use singleton objects to ensure that the entire app has only one data source
-object TaskRepository {
+@Singleton
+class TaskRepository @Inject constructor(
+    private val taskDao: TaskDao
+) {
 
-    // Use MutableStateFlow to save a list of observable tasks
-    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
-    val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
+    val tasks: Flow<List<Task>> = taskDao.getTasks()
 
-    init {
-        // Load fake data during initialization
-        _tasks.value = DummyDataProvider.tasks
-    }
+    suspend fun getTaskById(taskId: Int): Task? = taskDao.getTaskById(taskId)
 
-    fun getTaskById(taskId: Int): Task? {
-        return _tasks.value.find { it.id == taskId }
-    }
-
-    fun completeTask(taskId: Int) {
-        _tasks.update { currentTasks ->
-            currentTasks.map { task ->
-                if (task.id == taskId) {
-                    // Create a new Task object and update its isCompleted status
-                    task.copy(isCompleted = true)
-                } else {
-                    task
-                }
-            }
-        }
+    suspend fun completeTask(taskId: Int) {
+        taskDao.updateTaskCompletion(taskId, completed = true)
     }
 }
