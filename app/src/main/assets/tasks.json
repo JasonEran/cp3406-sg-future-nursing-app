@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "title": "Morning Medication",
+    "time": "08:00 AM",
+    "category": "Medication",
+    "iconName": "medical_services",
+    "isCompleted": true
+  },
+  {
+    "id": 2,
+    "title": "Check Blood Pressure",
+    "time": "08:30 AM",
+    "category": "Health Check",
+    "iconName": "monitor_heart",
+    "isCompleted": true
+  },
+  {
+    "id": 3,
+    "title": "Doctor's Appointment",
+    "time": "11:00 AM",
+    "category": "Appointment",
+    "iconName": "event",
+    "isCompleted": false
+  },
+  {
+    "id": 4,
+    "title": "Afternoon Medication",
+    "time": "01:00 PM",
+    "category": "Medication",
+    "iconName": "medical_services",
+    "isCompleted": false
+  },
+  {
+    "id": 5,
+    "title": "Evening Walk",
+    "time": "05:00 PM",
+    "category": "Activity",
+    "iconName": "monitor_heart",
+    "isCompleted": false
+  },
+  {
+    "id": 6,
+    "title": "Evening Medication",
+    "time": "08:00 PM",
+    "category": "Medication",
+    "iconName": "medical_services",
+    "isCompleted": false
+  }
+]

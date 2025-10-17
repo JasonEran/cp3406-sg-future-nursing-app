@@ -1,11 +1,16 @@
 package com.example.sg_future_nursing_app.ui.data
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TaskDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTasks(tasks: List<Task>)
+
     @Query("SELECT * FROM tasks")
     fun getTasks(): Flow<List<Task>>
 
