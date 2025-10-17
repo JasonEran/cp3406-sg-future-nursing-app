@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,6 +21,7 @@ data class DashboardUiState(
     val tasks: List<Task> = emptyList(),
     val userName: String = "Mark",
     val snackbarMessage: String? = null,
+    val isLoading: Boolean = true,
 )
 
 @HiltViewModel
@@ -28,15 +31,28 @@ class DashboardViewModel
         private val getTasksUseCase: GetTasksUseCase,
         private val completeTaskUseCase: CompleteTaskUseCase,
     ) : ViewModel() {
+        private data class TaskFeedState(
+            val tasks: List<Task>,
+            val isLoading: Boolean,
+        )
+
         private val snackbarMessage = MutableStateFlow<String?>(null)
+        private val tasksState =
+            getTasksUseCase()
+                .map { tasks -> TaskFeedState(tasks = tasks, isLoading = false) }
+                .onStart { emit(TaskFeedState(tasks = emptyList(), isLoading = true)) }
 
         // Directly observe and transform data streams from the Repository
         val uiState: StateFlow<DashboardUiState> =
             combine(
-                getTasksUseCase(),
+                tasksState,
                 snackbarMessage,
-            ) { tasks, message ->
-                DashboardUiState(tasks = tasks, snackbarMessage = message)
+            ) { taskFeedState, message ->
+                DashboardUiState(
+                    tasks = taskFeedState.tasks,
+                    snackbarMessage = message,
+                    isLoading = taskFeedState.isLoading,
+                )
             }.stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
