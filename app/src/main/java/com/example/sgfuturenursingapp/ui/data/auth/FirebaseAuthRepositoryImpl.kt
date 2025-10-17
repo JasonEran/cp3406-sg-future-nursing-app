@@ -56,7 +56,15 @@ class FirebaseAuthRepositoryImpl
                 }
             }
 
-        private suspend fun Task<AuthResult>.awaitResult(): AuthResult =
+        override suspend fun sendPasswordResetEmail(email: String): Result<Unit> =
+            runCatching {
+                firebaseAuth
+                    .sendPasswordResetEmail(email)
+                    .awaitResult()
+                Unit
+            }
+
+        private suspend fun <T> Task<T>.awaitResult(): T =
             suspendCancellableCoroutine { continuation ->
                 addOnCompleteListener { task ->
                     if (task.isSuccessful) {

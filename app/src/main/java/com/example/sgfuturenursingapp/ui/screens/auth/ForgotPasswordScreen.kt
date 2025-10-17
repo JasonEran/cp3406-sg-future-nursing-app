@@ -1,5 +1,6 @@
 package com.example.sgfuturenursingapp.ui.screens.auth
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,63 +12,56 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-fun LoginScreen(
-    onNavigateToRegister: () -> Unit,
-    onNavigateToForgotPassword: () -> Unit,
-    onLoginSuccess: () -> Unit,
+fun ForgotPasswordScreen(
+    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: AuthViewModel = hiltViewModel(),
+    viewModel: ForgotPasswordViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(uiState.isAuthenticated) {
-        if (uiState.isAuthenticated) {
-            onLoginSuccess()
-        }
-    }
-
-    LoginScreenContent(
+    ForgotPasswordContent(
         uiState = uiState,
         onEmailChanged = viewModel::onEmailChanged,
-        onPasswordChanged = viewModel::onPasswordChanged,
-        onLogin = viewModel::login,
-        onNavigateToRegister = onNavigateToRegister,
-        onNavigateToForgotPassword = onNavigateToForgotPassword,
+        onSubmit = viewModel::sendResetEmail,
+        onNavigateBack = onNavigateBack,
         modifier = modifier,
     )
 }
 
 @Composable
-private fun LoginScreenContent(
-    uiState: AuthUiState,
+@OptIn(ExperimentalMaterial3Api::class)
+private fun ForgotPasswordContent(
+    uiState: ForgotPasswordUiState,
     onEmailChanged: (String) -> Unit,
-    onPasswordChanged: (String) -> Unit,
-    onLogin: () -> Unit,
-    onNavigateToRegister: () -> Unit,
-    onNavigateToForgotPassword: () -> Unit,
+    onSubmit: () -> Unit,
+    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberScrollState()
@@ -77,6 +71,16 @@ private fun LoginScreenContent(
             modifier
                 .fillMaxSize()
                 .imePadding(),
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Reset password") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+            )
+        },
     ) { paddingValues ->
         Column(
             modifier =
@@ -86,6 +90,7 @@ private fun LoginScreenContent(
                     .padding(horizontal = 24.dp, vertical = 32.dp)
                     .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
         ) {
             if (uiState.isLoading) {
                 LinearProgressIndicator(
@@ -95,18 +100,16 @@ private fun LoginScreenContent(
                             .height(4.dp),
                 )
                 Spacer(modifier = Modifier.height(24.dp))
-            } else {
-                Spacer(modifier = Modifier.height(48.dp))
             }
 
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Welcome back",
+                    text = "Forgot your password?",
                     style = MaterialTheme.typography.headlineMedium,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Sign in to continue managing your nursing schedule.",
+                    text = "Enter the email associated with your account and we'll send you instructions to reset your password.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -114,17 +117,28 @@ private fun LoginScreenContent(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            LoginForm(
+            ForgotPasswordForm(
                 uiState = uiState,
                 onEmailChanged = onEmailChanged,
-                onPasswordChanged = onPasswordChanged,
-                onSubmit = onLogin,
+                onSubmit = onSubmit,
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            uiState.errorMessage?.takeIf { it.isNotBlank() }?.let { message ->
+            uiState.successMessage?.let { message ->
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp),
+                )
+            }
+
+            uiState.errorMessage?.let { message ->
                 Text(
                     text = message,
                     style = MaterialTheme.typography.bodySmall,
@@ -132,28 +146,21 @@ private fun LoginScreenContent(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .padding(top = 8.dp, bottom = 16.dp),
+                            .padding(bottom = 12.dp),
                 )
-            } ?: Spacer(modifier = Modifier.height(8.dp))
-
-            TextButton(onClick = onNavigateToRegister) {
-                Text(text = "Don't have an account? Sign up")
             }
 
-            TextButton(onClick = onNavigateToForgotPassword) {
-                Text(text = "Forgot your password?")
+            TextButton(onClick = onNavigateBack) {
+                Text(text = "Back to sign in")
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
-private fun LoginForm(
-    uiState: AuthUiState,
+private fun ForgotPasswordForm(
+    uiState: ForgotPasswordUiState,
     onEmailChanged: (String) -> Unit,
-    onPasswordChanged: (String) -> Unit,
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -170,29 +177,12 @@ private fun LoginForm(
             keyboardOptions =
                 KeyboardOptions(
                     keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next,
-                ),
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = uiState.password,
-            onValueChange = onPasswordChanged,
-            label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            singleLine = true,
-            enabled = !uiState.isLoading,
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions =
-                KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Done,
                 ),
             keyboardActions =
                 KeyboardActions(
                     onDone = {
-                        if (uiState.isFormValid && !uiState.isLoading) {
+                        if (uiState.canSubmit && !uiState.isLoading) {
                             focusManager.clearFocus()
                             onSubmit()
                         }
@@ -204,12 +194,12 @@ private fun LoginForm(
 
         Button(
             onClick = {
-                if (uiState.isFormValid && !uiState.isLoading) {
+                if (uiState.canSubmit && !uiState.isLoading) {
                     focusManager.clearFocus()
                     onSubmit()
                 }
             },
-            enabled = !uiState.isLoading && uiState.isFormValid,
+            enabled = uiState.canSubmit && !uiState.isLoading,
             modifier = Modifier.fillMaxWidth(),
         ) {
             if (uiState.isLoading) {
@@ -218,20 +208,18 @@ private fun LoginForm(
                     strokeWidth = 2.dp,
                 )
             }
-            Text(text = if (uiState.isLoading) "Signing in..." else "Sign in")
+            Text(text = if (uiState.isLoading) "Sending email..." else "Send reset email")
         }
     }
 }
 
 @Preview(showSystemUi = true)
 @Composable
-private fun LoginScreenPreview() {
-    LoginScreenContent(
-        uiState = AuthUiState(),
+private fun ForgotPasswordScreenPreview() {
+    ForgotPasswordContent(
+        uiState = ForgotPasswordUiState(),
         onEmailChanged = {},
-        onPasswordChanged = {},
-        onLogin = {},
-        onNavigateToRegister = {},
-        onNavigateToForgotPassword = {},
+        onSubmit = {},
+        onNavigateBack = {},
     )
 }

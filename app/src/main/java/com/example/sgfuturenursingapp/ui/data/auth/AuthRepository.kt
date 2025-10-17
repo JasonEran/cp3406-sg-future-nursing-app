@@ -9,5 +9,5 @@ interface AuthRepository {
     suspend fun logout(): Result<Unit>
     suspend fun getCurrentUser(): FirebaseUser?
     fun authStateFlow(): Flow<FirebaseUser?>
+    suspend fun sendPasswordResetEmail(email: String): Result<Unit>
 }
-
