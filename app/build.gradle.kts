@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.ktlint.gradle)
+    alias(libs.plugins.google.services)
 }
 
 val newsApiBaseUrl = "https://newsapi.org/v2/"
@@ -15,7 +16,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.sgfuturenursingapp"
+        applicationId = "com.example.sg_future_nursing_app"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -66,6 +67,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth.ktx)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.androidx.room.runtime)
