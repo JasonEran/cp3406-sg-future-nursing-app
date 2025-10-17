@@ -26,7 +26,7 @@ data class AddEditTaskUiState(
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
     val isDeleted: Boolean = false,
-    val titleError: String? = "标题不能为空",
+    val titleError: String? = "Title cannot be empty",
     val isSaveEnabled: Boolean = false,
     val errorMessage: String? = null,
 ) {
@@ -59,7 +59,7 @@ class AddEditTaskViewModel
 
         fun onTitleChanged(value: String) {
             val trimmed = value.trim()
-            val error = if (trimmed.isEmpty()) "标题不能为空" else null
+            val error = if (trimmed.isEmpty()) "Title cannot be empty" else null
             _uiState.update {
                 it.copy(
                     title = value,
@@ -91,7 +91,7 @@ class AddEditTaskViewModel
             if (title.isEmpty()) {
                 _uiState.update {
                     it.copy(
-                        titleError = "标题不能为空",
+                        titleError = "Title cannot be empty",
                         isSaveEnabled = false,
                     )
                 }
@@ -221,7 +221,7 @@ class AddEditTaskViewModel
 
         private fun validateTitle(value: String) {
             val trimmed = value.trim()
-            val error = if (trimmed.isEmpty()) "标题不能为空" else null
+            val error = if (trimmed.isEmpty()) "Title cannot be empty" else null
             _uiState.update {
                 it.copy(
                     titleError = error,

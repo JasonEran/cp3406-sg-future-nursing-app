@@ -146,7 +146,7 @@ private fun DashboardScreenContent(
                             modifier = Modifier.size(56.dp),
                         )
                         Text(
-                            text = "今天没有任务，点击右下角的'+'按钮来添加一个吧！",
+                            text = "No tasks for today. Tap the '+' button to add one!",
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center,
                         )

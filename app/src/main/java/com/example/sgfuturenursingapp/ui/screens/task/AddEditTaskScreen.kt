@@ -48,11 +48,11 @@ fun AddEditTaskScreen(
         when {
             uiState.isSaved -> {
                 viewModel.onActionConsumed()
-                onActionFinished("任务已保存")
+                onActionFinished("Task saved")
             }
             uiState.isDeleted -> {
                 viewModel.onActionConsumed()
-                onActionFinished("任务已删除")
+                onActionFinished("Task deleted")
             }
         }
     }

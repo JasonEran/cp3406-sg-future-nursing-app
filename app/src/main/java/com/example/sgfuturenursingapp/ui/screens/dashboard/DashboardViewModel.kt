@@ -91,8 +91,8 @@ class DashboardViewModel
                 deleteTaskUseCase(task.id)
                 snackbarMessage.value =
                     DashboardSnackbar(
-                        message = "任务已删除",
-                        actionLabel = "撤销",
+                        message = "Task deleted",
+                        actionLabel = "Undo",
                         type = SnackbarType.UndoDelete,
                     )
             }
@@ -127,12 +127,12 @@ class DashboardViewModel
                     )
                 }.onSuccess {
                     recentlyDeletedTask = null
-                    snackbarMessage.value = DashboardSnackbar(message = "任务已恢复")
+                    snackbarMessage.value = DashboardSnackbar(message = "Task restored")
                 }.onFailure { throwable ->
                     recentlyDeletedTask = null
                     snackbarMessage.value =
                         DashboardSnackbar(
-                            message = throwable.message ?: "无法恢复任务",
+                            message = throwable.message ?: "Unable to restore task",
                         )
                 }
             }
