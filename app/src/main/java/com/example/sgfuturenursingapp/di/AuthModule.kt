@@ -1,5 +1,7 @@
 package com.example.sgfuturenursingapp.di
 
+import com.example.sgfuturenursingapp.ui.data.auth.AuthRepository
+import com.example.sgfuturenursingapp.ui.data.auth.FirebaseAuthRepositoryImpl
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
@@ -14,5 +16,9 @@ object AuthModule {
     @Provides
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
-}
 
+    @Provides
+    @Singleton
+    fun provideAuthRepository(firebaseAuth: FirebaseAuth): AuthRepository =
+        FirebaseAuthRepositoryImpl(firebaseAuth)
+}
