@@ -8,25 +8,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
@@ -46,7 +41,6 @@ fun RegisterScreen(
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState.isAuthenticated) {
         if (uiState.isAuthenticated) {
@@ -54,19 +48,12 @@ fun RegisterScreen(
         }
     }
 
-    LaunchedEffect(uiState.errorMessage) {
-        val message = uiState.errorMessage
-        if (message != null) {
-            snackbarHostState.showSnackbar(message)
-            viewModel.clearError()
-        }
-    }
-
     RegisterScreenContent(
         uiState = uiState,
-        onRegister = { email, password -> viewModel.register(email, password) },
+        onEmailChanged = viewModel::onEmailChanged,
+        onPasswordChanged = viewModel::onPasswordChanged,
+        onRegister = viewModel::register,
         onNavigateToLogin = onNavigateToLogin,
-        snackbarHostState = snackbarHostState,
         modifier = modifier,
     )
 }
@@ -74,9 +61,10 @@ fun RegisterScreen(
 @Composable
 private fun RegisterScreenContent(
     uiState: AuthUiState,
-    onRegister: (String, String) -> Unit,
+    onEmailChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onRegister: () -> Unit,
     onNavigateToLogin: () -> Unit,
-    snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberScrollState()
@@ -86,7 +74,6 @@ private fun RegisterScreenContent(
             modifier
                 .fillMaxSize()
                 .imePadding(),
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { paddingValues ->
         Column(
             modifier =
@@ -97,11 +84,19 @@ private fun RegisterScreenContent(
                     .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.height(48.dp))
+            if (uiState.isLoading) {
+                LinearProgressIndicator(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(4.dp),
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            } else {
+                Spacer(modifier = Modifier.height(48.dp))
+            }
 
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-            ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Create account",
                     style = MaterialTheme.typography.headlineMedium,
@@ -117,14 +112,26 @@ private fun RegisterScreenContent(
             Spacer(modifier = Modifier.height(32.dp))
 
             RegisterForm(
-                isLoading = uiState.isLoading,
+                uiState = uiState,
+                onEmailChanged = onEmailChanged,
+                onPasswordChanged = onPasswordChanged,
                 onSubmit = onRegister,
-                modifier =
-                    Modifier
-                        .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            uiState.errorMessage?.takeIf { it.isNotBlank() }?.let { message ->
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp, bottom = 16.dp),
+                )
+            } ?: Spacer(modifier = Modifier.height(8.dp))
 
             TextButton(onClick = onNavigateToLogin) {
                 Text(text = "Already have an account? Sign in")
@@ -137,21 +144,21 @@ private fun RegisterScreenContent(
 
 @Composable
 private fun RegisterForm(
-    isLoading: Boolean,
-    onSubmit: (String, String) -> Unit,
+    uiState: AuthUiState,
+    onEmailChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var email by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
 
     Column(modifier = modifier) {
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
+            value = uiState.email,
+            onValueChange = onEmailChanged,
             label = { Text("Email") },
             singleLine = true,
-            enabled = !isLoading,
+            enabled = !uiState.isLoading,
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions =
                 KeyboardOptions(
@@ -159,14 +166,16 @@ private fun RegisterForm(
                     imeAction = ImeAction.Next,
                 ),
         )
+
         Spacer(modifier = Modifier.height(16.dp))
+
         OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
+            value = uiState.password,
+            onValueChange = onPasswordChanged,
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true,
-            enabled = !isLoading,
+            enabled = !uiState.isLoading,
             modifier = Modifier.fillMaxWidth(),
             supportingText = {
                 Text(
@@ -182,31 +191,33 @@ private fun RegisterForm(
             keyboardActions =
                 KeyboardActions(
                     onDone = {
-                        if (email.isNotBlank() && password.length >= 6 && !isLoading) {
+                        if (uiState.isFormValid && !uiState.isLoading) {
                             focusManager.clearFocus()
-                            onSubmit(email.trim(), password)
+                            onSubmit()
                         }
                     },
                 ),
         )
+
         Spacer(modifier = Modifier.height(24.dp))
+
         Button(
             onClick = {
-                if (email.isNotBlank() && password.length >= 6 && !isLoading) {
+                if (uiState.isFormValid && !uiState.isLoading) {
                     focusManager.clearFocus()
-                    onSubmit(email.trim(), password)
+                    onSubmit()
                 }
             },
-            enabled = !isLoading && email.isNotBlank() && password.length >= 6,
+            enabled = !uiState.isLoading && uiState.isFormValid,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            if (isLoading) {
+            if (uiState.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.padding(end = 8.dp),
                     strokeWidth = 2.dp,
                 )
             }
-            Text(text = if (isLoading) "Creating account..." else "Create account")
+            Text(text = if (uiState.isLoading) "Creating account..." else "Create account")
         }
     }
 }
@@ -216,8 +227,10 @@ private fun RegisterForm(
 private fun RegisterScreenPreview() {
     RegisterScreenContent(
         uiState = AuthUiState(),
-        onRegister = { _, _ -> },
+        onEmailChanged = {},
+        onPasswordChanged = {},
+        onRegister = {},
         onNavigateToLogin = {},
-        snackbarHostState = SnackbarHostState(),
     )
 }
+
