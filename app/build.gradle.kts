@@ -7,6 +7,9 @@ plugins {
     alias(libs.plugins.ktlint.gradle)
 }
 
+val newsApiBaseUrl = "https://newsapi.org/v2/"
+val newsApiKey = project.findProperty("NEWS_API_KEY") as? String ?: ""
+
 android {
     namespace = "com.example.sgfuturenursingapp"
     compileSdk = 36
@@ -19,6 +22,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "NEWS_API_BASE_URL", "\"$newsApiBaseUrl\"")
+        buildConfigField("String", "NEWS_API_KEY", "\"$newsApiKey\"")
     }
 
     buildTypes {
@@ -39,6 +44,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -59,6 +65,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.gson)
