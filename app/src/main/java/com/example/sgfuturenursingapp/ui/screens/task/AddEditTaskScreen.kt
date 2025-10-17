@@ -47,12 +47,12 @@ fun AddEditTaskScreen(
     LaunchedEffect(uiState.isSaved, uiState.isDeleted) {
         when {
             uiState.isSaved -> {
-                onActionFinished("任务已保存")
                 viewModel.onActionConsumed()
+                onActionFinished("Task saved")
             }
             uiState.isDeleted -> {
-                onActionFinished("任务已删除")
                 viewModel.onActionConsumed()
+                onActionFinished("Task deleted")
             }
         }
     }
@@ -116,8 +116,16 @@ private fun AddEditTaskScreenContent(
                 onValueChange = onTitleChanged,
                 label = { Text("Title") },
                 singleLine = true,
+                isError = uiState.titleError != null,
                 modifier = Modifier.fillMaxWidth(),
             )
+            uiState.titleError?.let { error ->
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
             OutlinedTextField(
                 value = uiState.time,
                 onValueChange = onTimeChanged,
@@ -151,7 +159,7 @@ private fun AddEditTaskScreenContent(
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = onSaveClicked,
-                enabled = !uiState.isSaving,
+                enabled = uiState.isSaveEnabled && !uiState.isSaving,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 if (uiState.isSaving) {
@@ -178,6 +186,8 @@ private fun AddEditTaskScreenPreview() {
                     time = "09:00",
                     category = "General",
                     priority = 1,
+                    titleError = null,
+                    isSaveEnabled = true,
                 ),
             onNavigateUp = {},
             onTitleChanged = {},
