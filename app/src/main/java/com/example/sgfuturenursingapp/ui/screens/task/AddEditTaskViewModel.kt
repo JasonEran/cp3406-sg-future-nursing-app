@@ -26,6 +26,8 @@ data class AddEditTaskUiState(
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
     val isDeleted: Boolean = false,
+    val titleError: String? = "Title cannot be empty",
+    val isSaveEnabled: Boolean = false,
     val errorMessage: String? = null,
 ) {
     companion object {
@@ -50,11 +52,22 @@ class AddEditTaskViewModel
             val taskIdArg = savedStateHandle.get<Int?>(TASK_ID_KEY)?.takeIf { it != DEFAULT_TASK_ID }
             if (taskIdArg != null) {
                 loadTask(taskIdArg)
+            } else {
+                validateTitle("")
             }
         }
 
         fun onTitleChanged(value: String) {
-            _uiState.update { it.copy(title = value, errorMessage = null) }
+            val trimmed = value.trim()
+            val error = if (trimmed.isEmpty()) "Title cannot be empty" else null
+            _uiState.update {
+                it.copy(
+                    title = value,
+                    errorMessage = null,
+                    titleError = error,
+                    isSaveEnabled = error == null,
+                )
+            }
         }
 
         fun onTimeChanged(value: String) {
@@ -76,7 +89,12 @@ class AddEditTaskViewModel
             val category = currentState.category.trim()
 
             if (title.isEmpty()) {
-                _uiState.update { it.copy(errorMessage = "Title cannot be empty") }
+                _uiState.update {
+                    it.copy(
+                        titleError = "Title cannot be empty",
+                        isSaveEnabled = false,
+                    )
+                }
                 return
             }
             if (time.isEmpty()) {
@@ -126,6 +144,8 @@ class AddEditTaskViewModel
                             isSaving = false,
                             isSaved = true,
                             isDeleted = false,
+                            titleError = null,
+                            isSaveEnabled = true,
                         )
                     }
                 }.onFailure { throwable ->
@@ -155,6 +175,7 @@ class AddEditTaskViewModel
                             isSaving = false,
                             isDeleted = true,
                             isSaved = false,
+                            isSaveEnabled = false,
                         )
                     }
                 }.onFailure { throwable ->
@@ -182,6 +203,8 @@ class AddEditTaskViewModel
                         priority = task.priority,
                         isSaved = false,
                         isDeleted = false,
+                        titleError = null,
+                        isSaveEnabled = true,
                     )
                 }
             }
@@ -194,5 +217,16 @@ class AddEditTaskViewModel
         companion object {
             const val TASK_ID_KEY = "taskId"
             private const val DEFAULT_TASK_ID = -1
+        }
+
+        private fun validateTitle(value: String) {
+            val trimmed = value.trim()
+            val error = if (trimmed.isEmpty()) "Title cannot be empty" else null
+            _uiState.update {
+                it.copy(
+                    titleError = error,
+                    isSaveEnabled = error == null,
+                )
+            }
         }
     }
