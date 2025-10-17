@@ -7,6 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.sgfuturenursingapp.ui.data.AppDatabase
 import com.example.sgfuturenursingapp.ui.data.Task
 import com.example.sgfuturenursingapp.ui.data.TaskDao
+import com.example.sgfuturenursingapp.ui.data.news.NewsDao
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.Module
@@ -38,13 +39,16 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "sg_future_nursing_app.db",
-        ).addMigrations(AppDatabase.MIGRATION_1_2)
+        ).addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
             .fallbackToDestructiveMigration()
             .addCallback(databaseCallback)
             .build()
 
     @Provides
     fun provideTaskDao(appDatabase: AppDatabase): TaskDao = appDatabase.taskDao()
+
+    @Provides
+    fun provideNewsDao(appDatabase: AppDatabase): NewsDao = appDatabase.newsDao()
 
     @Provides
     @Singleton
