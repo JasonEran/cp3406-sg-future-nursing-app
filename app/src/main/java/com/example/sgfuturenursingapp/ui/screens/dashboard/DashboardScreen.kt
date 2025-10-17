@@ -2,6 +2,7 @@
 
 package com.example.sgfuturenursingapp.ui.screens.dashboard
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,10 +13,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissValue
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -25,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.sgfuturenursingapp.ui.components.TaskItem
 import com.example.sgfuturenursingapp.ui.data.DummyDataProvider
+import com.example.sgfuturenursingapp.ui.data.Task
 import com.example.sgfuturenursingapp.ui.theme.CP3406SGFutureNursingAppTheme
 
 @Composable
@@ -53,12 +62,17 @@ fun DashboardScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(uiState.snackbarMessage) {
-        val message = uiState.snackbarMessage
-        if (message != null) {
-            snackbarHostState.showSnackbar(message)
-            viewModel.clearSnackbarMessage()
-        }
+    LaunchedEffect(uiState.snackbar) {
+        val snackbar = uiState.snackbar ?: return@LaunchedEffect
+        val result =
+            snackbarHostState.showSnackbar(
+                message = snackbar.message,
+                actionLabel = snackbar.actionLabel,
+            )
+        viewModel.onSnackbarResult(
+            snackbar = snackbar,
+            actionPerformed = result == SnackbarResult.ActionPerformed,
+        )
     }
 
     DashboardScreenContent(
@@ -67,11 +81,12 @@ fun DashboardScreen(
         onProfileClick = onProfileClick,
         onCompleteClick = viewModel::completeTask,
         onAddTaskClick = onAddTaskClick,
+        onDismissTask = viewModel::onTaskDismissed,
         snackbarHostState = snackbarHostState,
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 private fun DashboardScreenContent(
     uiState: DashboardUiState,
@@ -79,6 +94,7 @@ private fun DashboardScreenContent(
     onProfileClick: () -> Unit,
     onCompleteClick: (Int) -> Unit,
     onAddTaskClick: () -> Unit,
+    onDismissTask: (Task) -> Unit,
     snackbarHostState: SnackbarHostState,
 ) {
     Scaffold(
@@ -87,7 +103,7 @@ private fun DashboardScreenContent(
                 title = { Text("Today's Care Plan") },
                 actions = {
                     IconButton(onClick = onProfileClick) {
-                        Icon(Icons.Default.AccountCircle, contentDescription = "Profile")
+                        Icon(Icons.Filled.AccountCircle, contentDescription = "Profile")
                     }
                 },
                 colors =
@@ -98,7 +114,7 @@ private fun DashboardScreenContent(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddTaskClick) {
-                Icon(Icons.Default.Add, contentDescription = "Add Task")
+                Icon(Icons.Filled.Add, contentDescription = "Add Task")
             }
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -113,6 +129,7 @@ private fun DashboardScreenContent(
                 uiState.isLoading -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
+
                 uiState.tasks.isEmpty() -> {
                     Column(
                         modifier =
@@ -123,18 +140,19 @@ private fun DashboardScreenContent(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Info,
+                            imageVector = Icons.Filled.Info,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(56.dp),
                         )
                         Text(
-                            text = "今天没有任务，点击右下角的“+”按钮来添加一个吧！",
+                            text = "今天没有任务，点击右下角的'+'按钮来添加一个吧！",
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center,
                         )
                     }
                 }
+
                 else -> {
                     LazyColumn(
                         modifier =
@@ -151,11 +169,59 @@ private fun DashboardScreenContent(
                                 modifier = Modifier.padding(bottom = 8.dp),
                             )
                         }
-                        items(uiState.tasks) { task ->
-                            TaskItem(
-                                task = task,
-                                modifier = Modifier.clickable { onTaskClick(task.id) },
-                                onCompleteClick = onCompleteClick,
+
+                        items(
+                            items = uiState.tasks,
+                            key = { it.id },
+                        ) { task ->
+                            val dismissState =
+                                rememberDismissState { value ->
+                                    val dismissed =
+                                        value == DismissValue.DismissedToEnd ||
+                                            value == DismissValue.DismissedToStart
+                                    if (dismissed) {
+                                        onDismissTask(task)
+                                    }
+                                    dismissed
+                                }
+
+                            SwipeToDismiss(
+                                state = dismissState,
+                                directions =
+                                    setOf(
+                                        DismissDirection.StartToEnd,
+                                        DismissDirection.EndToStart,
+                                    ),
+                                background = {
+                                    val direction = dismissState.dismissDirection ?: return@SwipeToDismiss
+                                    val alignment =
+                                        if (direction == DismissDirection.StartToEnd) {
+                                            Alignment.CenterStart
+                                        } else {
+                                            Alignment.CenterEnd
+                                        }
+                                    Box(
+                                        modifier =
+                                            Modifier
+                                                .fillMaxSize()
+                                                .background(MaterialTheme.colorScheme.errorContainer)
+                                                .padding(horizontal = 24.dp),
+                                        contentAlignment = alignment,
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Delete,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onErrorContainer,
+                                        )
+                                    }
+                                },
+                                dismissContent = {
+                                    TaskItem(
+                                        task = task,
+                                        modifier = Modifier.clickable { onTaskClick(task.id) },
+                                        onCompleteClick = onCompleteClick,
+                                    )
+                                },
                             )
                         }
                     }
@@ -181,6 +247,7 @@ fun DashboardScreenPreview() {
             onProfileClick = {},
             onCompleteClick = {},
             onAddTaskClick = {},
+            onDismissTask = {},
             snackbarHostState = snackbarHostState,
         )
     }
