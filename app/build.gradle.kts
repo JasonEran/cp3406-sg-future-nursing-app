@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.sg_future_nursing_app"
+    namespace = "com.example.sgfuturenursingapp"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.sg_future_nursing_app"
+        applicationId = "com.example.sgfuturenursingapp"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
