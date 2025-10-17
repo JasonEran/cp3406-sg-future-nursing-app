@@ -4,23 +4,23 @@ import com.example.sgfuturenursingapp.ui.data.Task
 import com.example.sgfuturenursingapp.ui.data.TaskRepository
 import javax.inject.Inject
 
-class AddTaskUseCase
+class UpdateTaskUseCase
     @Inject
     constructor(
         private val taskRepository: TaskRepository,
     ) {
         suspend operator fun invoke(
+            taskId: Int,
             title: String,
             time: String,
             category: String,
-            iconName: String = DEFAULT_ICON_NAME,
-            isCompleted: Boolean = false,
-            priority: Int = 0,
+            iconName: String,
+            isCompleted: Boolean,
+            priority: Int,
         ): Task {
-            val id = taskRepository.getNextTaskId()
             val task =
                 Task(
-                    id = id,
+                    id = taskId,
                     title = title,
                     time = time,
                     category = category,
@@ -30,9 +30,5 @@ class AddTaskUseCase
                 )
             taskRepository.upsertTask(task)
             return task
-        }
-
-        private companion object {
-            const val DEFAULT_ICON_NAME = "event"
         }
     }

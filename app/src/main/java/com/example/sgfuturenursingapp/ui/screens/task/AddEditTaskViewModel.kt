@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sgfuturenursingapp.domain.usecase.AddTaskUseCase
 import com.example.sgfuturenursingapp.domain.usecase.GetTaskByIdUseCase
+import com.example.sgfuturenursingapp.domain.usecase.UpdateTaskUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,6 +37,7 @@ class AddEditTaskViewModel
     constructor(
         private val addTaskUseCase: AddTaskUseCase,
         private val getTaskByIdUseCase: GetTaskByIdUseCase,
+        private val updateTaskUseCase: UpdateTaskUseCase,
         savedStateHandle: SavedStateHandle,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(AddEditTaskUiState())
@@ -85,18 +87,43 @@ class AddEditTaskViewModel
 
             viewModelScope.launch {
                 _uiState.update { it.copy(isSaving = true, errorMessage = null) }
-                runCatching {
-                    addTaskUseCase(
-                        title = title,
-                        time = time,
-                        category = category,
-                        taskId = currentState.taskId,
-                        iconName = currentState.iconName,
-                        isCompleted = currentState.isCompleted,
-                        priority = currentState.priority,
-                    )
-                }.onSuccess {
-                    _uiState.update { it.copy(isSaving = false, isSaved = true) }
+                val result =
+                    runCatching {
+                        if (currentState.taskId == null) {
+                            addTaskUseCase(
+                                title = title,
+                                time = time,
+                                category = category,
+                                iconName = currentState.iconName,
+                                isCompleted = currentState.isCompleted,
+                                priority = currentState.priority,
+                            )
+                        } else {
+                            updateTaskUseCase(
+                                taskId = currentState.taskId,
+                                title = title,
+                                time = time,
+                                category = category,
+                                iconName = currentState.iconName,
+                                isCompleted = currentState.isCompleted,
+                                priority = currentState.priority,
+                            )
+                        }
+                    }
+                result.onSuccess { task ->
+                    _uiState.update {
+                        it.copy(
+                            taskId = task.id,
+                            title = task.title,
+                            time = task.time,
+                            category = task.category,
+                            iconName = task.iconName,
+                            isCompleted = task.isCompleted,
+                            priority = task.priority,
+                            isSaving = false,
+                            isSaved = true,
+                        )
+                    }
                 }.onFailure { throwable ->
                     _uiState.update {
                         it.copy(

@@ -47,6 +47,11 @@ fun AppNavigation() {
             TaskDetailScreen(
                 taskId = taskId,
                 onNavigateUp = { navController.navigateUp() },
+                onEditTask = { id ->
+                    navController.navigate(
+                        "${ScreenRoutes.ADD_EDIT_TASK}?${ScreenRoutes.TASK_ID}=$id",
+                    )
+                },
             )
         }
 
