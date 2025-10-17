@@ -10,6 +10,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.sgfuturenursingapp.ui.screens.auth.LoginScreen
+import com.example.sgfuturenursingapp.ui.screens.auth.RegisterScreen
 import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardScreen
 import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardViewModel
 import com.example.sgfuturenursingapp.ui.screens.profile.ProfileScreen
@@ -18,6 +20,8 @@ import com.example.sgfuturenursingapp.ui.screens.task.TaskDetailScreen
 
 // Define routing names for all screens
 object ScreenRoutes {
+    const val LOGIN = "login"
+    const val REGISTER = "register"
     const val DASHBOARD = "dashboard"
     const val TASK_DETAIL = "task_detail"
     const val PROFILE = "profile"
@@ -30,7 +34,37 @@ object ScreenRoutes {
 fun AppNavigation() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = ScreenRoutes.DASHBOARD) {
+    NavHost(navController = navController, startDestination = ScreenRoutes.LOGIN) {
+        composable(ScreenRoutes.LOGIN) {
+            LoginScreen(
+                onNavigateToRegister = {
+                    navController.navigate(ScreenRoutes.REGISTER) {
+                        launchSingleTop = true
+                    }
+                },
+                onLoginSuccess = {
+                    navController.navigate(ScreenRoutes.DASHBOARD) {
+                        popUpTo(ScreenRoutes.LOGIN) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
+
+        composable(ScreenRoutes.REGISTER) {
+            RegisterScreen(
+                onNavigateToLogin = {
+                    navController.popBackStack(ScreenRoutes.LOGIN, inclusive = false)
+                },
+                onRegisterSuccess = {
+                    navController.navigate(ScreenRoutes.DASHBOARD) {
+                        popUpTo(ScreenRoutes.LOGIN) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
+
         composable(ScreenRoutes.DASHBOARD) { backStackEntry ->
             val dashboardViewModel = hiltViewModel<DashboardViewModel>()
             val message = backStackEntry.savedStateHandle.get<String>(ScreenRoutes.RESULT_MESSAGE)
