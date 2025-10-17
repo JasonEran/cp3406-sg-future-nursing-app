@@ -64,6 +64,18 @@ class FirebaseAuthRepositoryImpl
                 Unit
             }
 
+        override fun getCurrentUserRole(): String? =
+            firebaseAuth.currentUser?.email?.let { determineRole(it) }
+
+        override fun getRoleForEmail(email: String): String = determineRole(email)
+
+        private fun determineRole(email: String): String =
+            when {
+                email.contains("admin", ignoreCase = true) -> "Admin"
+                email.contains("primary", ignoreCase = true) -> "Primary Caregiver"
+                else -> "Helper"
+            }
+
         private suspend fun <T> Task<T>.awaitResult(): T =
             suspendCancellableCoroutine { continuation ->
                 addOnCompleteListener { task ->

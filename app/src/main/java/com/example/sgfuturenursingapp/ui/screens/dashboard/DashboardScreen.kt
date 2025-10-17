@@ -97,6 +97,8 @@ private fun DashboardScreenContent(
     onDismissTask: (Task) -> Unit,
     snackbarHostState: SnackbarHostState,
 ) {
+    val canAddTask = uiState.userRole in setOf("Admin", "Primary Caregiver")
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -113,8 +115,10 @@ private fun DashboardScreenContent(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddTaskClick) {
-                Icon(Icons.Filled.Add, contentDescription = "Add Task")
+            if (canAddTask) {
+                FloatingActionButton(onClick = onAddTaskClick) {
+                    Icon(Icons.Filled.Add, contentDescription = "Add Task")
+                }
             }
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -146,7 +150,12 @@ private fun DashboardScreenContent(
                             modifier = Modifier.size(56.dp),
                         )
                         Text(
-                            text = "No tasks for today. Tap the '+' button to add one!",
+                            text =
+                                if (canAddTask) {
+                                    "No tasks for today. Tap the '+' button to add one!"
+                                } else {
+                                    "No tasks assigned for today."
+                                },
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center,
                         )
@@ -237,6 +246,7 @@ fun DashboardScreenPreview() {
     val previewState =
         DashboardUiState(
             tasks = DummyDataProvider.tasks,
+            userRole = "Admin",
             isLoading = false,
         )
     val snackbarHostState = SnackbarHostState()

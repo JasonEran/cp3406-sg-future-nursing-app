@@ -7,6 +7,7 @@ import com.example.sgfuturenursingapp.domain.usecase.DeleteTaskUseCase
 import com.example.sgfuturenursingapp.domain.usecase.GetTasksUseCase
 import com.example.sgfuturenursingapp.domain.usecase.UpdateTaskUseCase
 import com.example.sgfuturenursingapp.ui.data.Task
+import com.example.sgfuturenursingapp.ui.data.auth.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,6 +23,7 @@ import javax.inject.Inject
 data class DashboardUiState(
     val tasks: List<Task> = emptyList(),
     val userName: String = "Mark",
+    val userRole: String = "Helper",
     val snackbar: DashboardSnackbar? = null,
     val isLoading: Boolean = true,
 )
@@ -45,6 +47,7 @@ class DashboardViewModel
         private val completeTaskUseCase: CompleteTaskUseCase,
         private val deleteTaskUseCase: DeleteTaskUseCase,
         private val updateTaskUseCase: UpdateTaskUseCase,
+        private val authRepository: AuthRepository,
     ) : ViewModel() {
         private data class TaskFeedState(
             val tasks: List<Task>,
@@ -56,6 +59,11 @@ class DashboardViewModel
             getTasksUseCase()
                 .map { tasks -> TaskFeedState(tasks = tasks, isLoading = false) }
                 .onStart { emit(TaskFeedState(tasks = emptyList(), isLoading = true)) }
+        private val userRoleState =
+            authRepository
+                .authStateFlow()
+                .map { user -> user?.email?.let { authRepository.getRoleForEmail(it) } ?: "Helper" }
+                .onStart { emit(authRepository.getCurrentUserRole() ?: "Helper") }
         private var recentlyDeletedTask: Task? = null
 
         // Directly observe and transform data streams from the Repository
@@ -63,16 +71,21 @@ class DashboardViewModel
             combine(
                 tasksState,
                 snackbarMessage,
-            ) { taskFeedState, snackbar ->
+                userRoleState,
+            ) { taskFeedState, snackbar, role ->
                 DashboardUiState(
                     tasks = taskFeedState.tasks,
+                    userRole = role,
                     snackbar = snackbar,
                     isLoading = taskFeedState.isLoading,
                 )
             }.stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
-                initialValue = DashboardUiState(),
+                initialValue =
+                    DashboardUiState(
+                        userRole = authRepository.getCurrentUserRole() ?: "Helper",
+                    ),
             )
 
         fun completeTask(taskId: Int) {

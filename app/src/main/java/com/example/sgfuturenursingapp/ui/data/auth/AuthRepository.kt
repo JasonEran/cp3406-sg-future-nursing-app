@@ -10,4 +10,6 @@ interface AuthRepository {
     suspend fun getCurrentUser(): FirebaseUser?
     fun authStateFlow(): Flow<FirebaseUser?>
     suspend fun sendPasswordResetEmail(email: String): Result<Unit>
+    fun getCurrentUserRole(): String?
+    fun getRoleForEmail(email: String): String
 }
