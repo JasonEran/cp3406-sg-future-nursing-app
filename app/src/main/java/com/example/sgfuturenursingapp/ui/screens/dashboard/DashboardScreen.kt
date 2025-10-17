@@ -11,7 +11,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +36,7 @@ import com.example.sgfuturenursingapp.ui.theme.CP3406SGFutureNursingAppTheme
 fun DashboardScreen(
     onTaskClick: (Int) -> Unit,
     onProfileClick: () -> Unit,
+    onAddTaskClick: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -42,6 +45,7 @@ fun DashboardScreen(
         onTaskClick = onTaskClick,
         onProfileClick = onProfileClick,
         onCompleteClick = viewModel::completeTask,
+        onAddTaskClick = onAddTaskClick,
     )
 }
 
@@ -52,6 +56,7 @@ private fun DashboardScreenContent(
     onTaskClick: (Int) -> Unit,
     onProfileClick: () -> Unit,
     onCompleteClick: (Int) -> Unit,
+    onAddTaskClick: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -67,6 +72,11 @@ private fun DashboardScreenContent(
                         containerColor = MaterialTheme.colorScheme.background,
                     ),
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onAddTaskClick) {
+                Icon(Icons.Default.Add, contentDescription = "Add Task")
+            }
         },
     ) { paddingValues ->
         LazyColumn(
@@ -106,6 +116,7 @@ fun DashboardScreenPreview() {
             onTaskClick = {},
             onProfileClick = {},
             onCompleteClick = {},
+            onAddTaskClick = {},
         )
     }
 }

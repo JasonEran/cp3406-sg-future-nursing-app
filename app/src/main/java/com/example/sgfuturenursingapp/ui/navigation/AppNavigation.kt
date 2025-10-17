@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardScreen
 import com.example.sgfuturenursingapp.ui.screens.profile.ProfileScreen
+import com.example.sgfuturenursingapp.ui.screens.task.AddEditTaskScreen
 import com.example.sgfuturenursingapp.ui.screens.task.TaskDetailScreen
 
 // Define routing names for all screens
@@ -15,6 +16,7 @@ object ScreenRoutes {
     const val DASHBOARD = "dashboard"
     const val TASK_DETAIL = "task_detail"
     const val PROFILE = "profile"
+    const val ADD_EDIT_TASK = "add_edit_task"
 }
 
 @Composable
@@ -31,6 +33,9 @@ fun AppNavigation() {
                 onProfileClick = {
                     navController.navigate(ScreenRoutes.PROFILE)
                 },
+                onAddTaskClick = {
+                    navController.navigate(ScreenRoutes.ADD_EDIT_TASK)
+                },
             )
         }
 
@@ -45,6 +50,15 @@ fun AppNavigation() {
         composable(ScreenRoutes.PROFILE) {
             ProfileScreen(
                 onNavigateUp = { navController.navigateUp() },
+            )
+        }
+
+        composable(ScreenRoutes.ADD_EDIT_TASK) {
+            AddEditTaskScreen(
+                onNavigateUp = { navController.navigateUp() },
+                onSaveClick = { _, _, _ ->
+                    navController.navigateUp()
+                },
             )
         }
     }
