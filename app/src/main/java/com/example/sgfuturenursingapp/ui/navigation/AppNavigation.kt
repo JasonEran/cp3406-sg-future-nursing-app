@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.sgfuturenursingapp.ui.screens.auth.ForgotPasswordScreen
 import com.example.sgfuturenursingapp.ui.screens.auth.LoginScreen
 import com.example.sgfuturenursingapp.ui.screens.auth.RegisterScreen
 import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardScreen
@@ -22,6 +23,7 @@ import com.example.sgfuturenursingapp.ui.screens.task.TaskDetailScreen
 object ScreenRoutes {
     const val LOGIN = "login"
     const val REGISTER = "register"
+    const val FORGOT_PASSWORD = "forgot_password"
     const val DASHBOARD = "dashboard"
     const val TASK_DETAIL = "task_detail"
     const val PROFILE = "profile"
@@ -39,6 +41,11 @@ fun AppNavigation() {
             LoginScreen(
                 onNavigateToRegister = {
                     navController.navigate(ScreenRoutes.REGISTER) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToForgotPassword = {
+                    navController.navigate(ScreenRoutes.FORGOT_PASSWORD) {
                         launchSingleTop = true
                     }
                 },
@@ -62,6 +69,12 @@ fun AppNavigation() {
                         launchSingleTop = true
                     }
                 },
+            )
+        }
+
+        composable(ScreenRoutes.FORGOT_PASSWORD) {
+            ForgotPasswordScreen(
+                onNavigateBack = { navController.popBackStack() },
             )
         }
 

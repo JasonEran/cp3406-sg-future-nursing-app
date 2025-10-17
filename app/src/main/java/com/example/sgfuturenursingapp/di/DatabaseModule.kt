@@ -39,7 +39,7 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "sg_future_nursing_app.db",
-        ).addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
+        ).addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4)
             .fallbackToDestructiveMigration()
             .addCallback(databaseCallback)
             .build()
