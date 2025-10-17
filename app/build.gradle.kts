@@ -5,20 +5,26 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.ktlint.gradle)
+    alias(libs.plugins.google.services)
 }
+
+val newsApiBaseUrl = "https://newsapi.org/v2/"
+val newsApiKey = project.findProperty("NEWS_API_KEY") as? String ?: ""
 
 android {
     namespace = "com.example.sgfuturenursingapp"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.sgfuturenursingapp"
+        applicationId = "com.example.sg_future_nursing_app"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "NEWS_API_BASE_URL", "\"$newsApiBaseUrl\"")
+        buildConfigField("String", "NEWS_API_KEY", "\"$newsApiKey\"")
     }
 
     buildTypes {
@@ -39,6 +45,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -57,8 +64,13 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.gson)
