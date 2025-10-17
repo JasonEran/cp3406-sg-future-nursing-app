@@ -14,7 +14,17 @@ class TaskRepository
 
         suspend fun getTaskById(taskId: Int): Task? = taskDao.getTaskById(taskId)
 
+        suspend fun upsertTask(task: Task) {
+            taskDao.insertTask(task)
+        }
+
         suspend fun completeTask(taskId: Int) {
             taskDao.updateTaskCompletion(taskId, completed = true)
+        }
+
+        suspend fun getNextTaskId(): Int = (taskDao.getMaxTaskId() ?: 0) + 1
+
+        suspend fun deleteTask(taskId: Int) {
+            taskDao.deleteTask(taskId)
         }
     }

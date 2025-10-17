@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,6 +35,7 @@ import com.example.sgfuturenursingapp.ui.theme.SuccessGreen
 fun TaskDetailScreen(
     taskId: String?,
     onNavigateUp: () -> Unit,
+    onEditTask: (Int) -> Unit,
     viewModel: TaskDetailViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(taskId) {
@@ -49,6 +51,14 @@ fun TaskDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    val editableTask = task
+                    if (editableTask != null) {
+                        IconButton(onClick = { onEditTask(editableTask.id) }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit Task")
+                        }
                     }
                 },
             )
