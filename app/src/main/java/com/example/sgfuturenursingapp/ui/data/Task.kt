@@ -10,5 +10,6 @@ data class Task(
     val time: String,
     val category: String,
     val iconName: String,
-    val isCompleted: Boolean
+    val isCompleted: Boolean,
+    val priority: Int = 0
 )
