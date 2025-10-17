@@ -22,4 +22,10 @@ interface TaskDao {
         taskId: Int,
         completed: Boolean,
     )
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTask(task: Task)
+
+    @Query("SELECT MAX(id) FROM tasks")
+    suspend fun getMaxTaskId(): Int?
 }

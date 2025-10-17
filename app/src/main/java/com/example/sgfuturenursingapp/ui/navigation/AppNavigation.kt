@@ -3,9 +3,11 @@
 package com.example.sgfuturenursingapp.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardScreen
 import com.example.sgfuturenursingapp.ui.screens.profile.ProfileScreen
 import com.example.sgfuturenursingapp.ui.screens.task.AddEditTaskScreen
@@ -17,6 +19,7 @@ object ScreenRoutes {
     const val TASK_DETAIL = "task_detail"
     const val PROFILE = "profile"
     const val ADD_EDIT_TASK = "add_edit_task"
+    const val TASK_ID = "taskId"
 }
 
 @Composable
@@ -53,12 +56,19 @@ fun AppNavigation() {
             )
         }
 
-        composable(ScreenRoutes.ADD_EDIT_TASK) {
+        composable(
+            route = "${ScreenRoutes.ADD_EDIT_TASK}?${ScreenRoutes.TASK_ID}={${ScreenRoutes.TASK_ID}}",
+            arguments =
+                listOf(
+                    navArgument(ScreenRoutes.TASK_ID) {
+                        type = NavType.IntType
+                        defaultValue = -1
+                    },
+                ),
+        ) {
             AddEditTaskScreen(
                 onNavigateUp = { navController.navigateUp() },
-                onSaveClick = { _, _, _ ->
-                    navController.navigateUp()
-                },
+                onSaveSuccess = { navController.navigateUp() },
             )
         }
     }
