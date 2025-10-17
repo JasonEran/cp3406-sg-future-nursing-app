@@ -28,4 +28,7 @@ interface TaskDao {
 
     @Query("SELECT MAX(id) FROM tasks")
     suspend fun getMaxTaskId(): Int?
+
+    @Query("DELETE FROM tasks WHERE id = :taskId")
+    suspend fun deleteTask(taskId: Int)
 }

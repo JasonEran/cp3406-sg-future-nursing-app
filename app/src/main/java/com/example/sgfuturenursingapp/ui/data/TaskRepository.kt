@@ -23,4 +23,8 @@ class TaskRepository
         }
 
         suspend fun getNextTaskId(): Int = (taskDao.getMaxTaskId() ?: 0) + 1
+
+        suspend fun deleteTask(taskId: Int) {
+            taskDao.deleteTask(taskId)
+        }
     }

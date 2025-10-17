@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sgfuturenursingapp.domain.usecase.AddTaskUseCase
+import com.example.sgfuturenursingapp.domain.usecase.DeleteTaskUseCase
 import com.example.sgfuturenursingapp.domain.usecase.GetTaskByIdUseCase
 import com.example.sgfuturenursingapp.domain.usecase.UpdateTaskUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +25,7 @@ data class AddEditTaskUiState(
     val priority: Int = 0,
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
+    val isDeleted: Boolean = false,
     val errorMessage: String? = null,
 ) {
     companion object {
@@ -38,6 +40,7 @@ class AddEditTaskViewModel
         private val addTaskUseCase: AddTaskUseCase,
         private val getTaskByIdUseCase: GetTaskByIdUseCase,
         private val updateTaskUseCase: UpdateTaskUseCase,
+        private val deleteTaskUseCase: DeleteTaskUseCase,
         savedStateHandle: SavedStateHandle,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(AddEditTaskUiState())
@@ -122,6 +125,7 @@ class AddEditTaskViewModel
                             priority = task.priority,
                             isSaving = false,
                             isSaved = true,
+                            isDeleted = false,
                         )
                     }
                 }.onFailure { throwable ->
@@ -129,6 +133,35 @@ class AddEditTaskViewModel
                         it.copy(
                             isSaving = false,
                             errorMessage = throwable.message ?: "Unable to save task. Please try again.",
+                        )
+                    }
+                }
+            }
+        }
+
+        fun onDeleteClicked() {
+            val currentId =
+                _uiState.value.taskId ?: run {
+                    _uiState.update { it.copy(errorMessage = "Unable to delete unsaved task.") }
+                    return
+                }
+            viewModelScope.launch {
+                _uiState.update { it.copy(isSaving = true, errorMessage = null) }
+                runCatching {
+                    deleteTaskUseCase(currentId)
+                }.onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            isSaving = false,
+                            isDeleted = true,
+                            isSaved = false,
+                        )
+                    }
+                }.onFailure { throwable ->
+                    _uiState.update {
+                        it.copy(
+                            isSaving = false,
+                            errorMessage = throwable.message ?: "Unable to delete task. Please try again.",
                         )
                     }
                 }
@@ -147,9 +180,15 @@ class AddEditTaskViewModel
                         iconName = task.iconName,
                         isCompleted = task.isCompleted,
                         priority = task.priority,
+                        isSaved = false,
+                        isDeleted = false,
                     )
                 }
             }
+        }
+
+        fun onActionConsumed() {
+            _uiState.update { it.copy(isSaved = false, isDeleted = false) }
         }
 
         companion object {

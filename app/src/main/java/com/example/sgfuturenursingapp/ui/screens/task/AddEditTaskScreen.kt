@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,14 +39,21 @@ import com.example.sgfuturenursingapp.ui.theme.CP3406SGFutureNursingAppTheme
 @Composable
 fun AddEditTaskScreen(
     onNavigateUp: () -> Unit,
-    onSaveSuccess: () -> Unit,
+    onActionFinished: (String) -> Unit,
     viewModel: AddEditTaskViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(uiState.isSaved) {
-        if (uiState.isSaved) {
-            onSaveSuccess()
+    LaunchedEffect(uiState.isSaved, uiState.isDeleted) {
+        when {
+            uiState.isSaved -> {
+                onActionFinished("任务已保存")
+                viewModel.onActionConsumed()
+            }
+            uiState.isDeleted -> {
+                onActionFinished("任务已删除")
+                viewModel.onActionConsumed()
+            }
         }
     }
 
@@ -57,6 +65,7 @@ fun AddEditTaskScreen(
         onCategoryChanged = viewModel::onCategoryChanged,
         onPriorityChanged = viewModel::onPriorityChanged,
         onSaveClicked = viewModel::onSaveClicked,
+        onDeleteClicked = viewModel::onDeleteClicked,
     )
 }
 
@@ -70,6 +79,7 @@ private fun AddEditTaskScreenContent(
     onCategoryChanged: (String) -> Unit,
     onPriorityChanged: (Int) -> Unit,
     onSaveClicked: () -> Unit,
+    onDeleteClicked: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -78,6 +88,16 @@ private fun AddEditTaskScreenContent(
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    if (uiState.taskId != null) {
+                        IconButton(
+                            onClick = onDeleteClicked,
+                            enabled = !uiState.isSaving,
+                        ) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete Task")
+                        }
                     }
                 },
             )
@@ -165,6 +185,7 @@ private fun AddEditTaskScreenPreview() {
             onCategoryChanged = {},
             onPriorityChanged = {},
             onSaveClicked = {},
+            onDeleteClicked = {},
         )
     }
 }

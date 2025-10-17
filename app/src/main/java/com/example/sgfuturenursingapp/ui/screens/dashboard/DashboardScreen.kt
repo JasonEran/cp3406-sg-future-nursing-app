@@ -18,12 +18,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,12 +44,23 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState.snackbarMessage) {
+        val message = uiState.snackbarMessage
+        if (message != null) {
+            snackbarHostState.showSnackbar(message)
+            viewModel.clearSnackbarMessage()
+        }
+    }
+
     DashboardScreenContent(
         uiState = uiState,
         onTaskClick = onTaskClick,
         onProfileClick = onProfileClick,
         onCompleteClick = viewModel::completeTask,
         onAddTaskClick = onAddTaskClick,
+        snackbarHostState = snackbarHostState,
     )
 }
 
@@ -57,6 +72,7 @@ private fun DashboardScreenContent(
     onProfileClick: () -> Unit,
     onCompleteClick: (Int) -> Unit,
     onAddTaskClick: () -> Unit,
+    snackbarHostState: SnackbarHostState,
 ) {
     Scaffold(
         topBar = {
@@ -78,6 +94,7 @@ private fun DashboardScreenContent(
                 Icon(Icons.Default.Add, contentDescription = "Add Task")
             }
         },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { paddingValues ->
         LazyColumn(
             modifier =
@@ -110,6 +127,7 @@ private fun DashboardScreenContent(
 @Composable
 fun DashboardScreenPreview() {
     val previewState = DashboardUiState(tasks = DummyDataProvider.tasks)
+    val snackbarHostState = SnackbarHostState()
     CP3406SGFutureNursingAppTheme {
         DashboardScreenContent(
             uiState = previewState,
@@ -117,6 +135,7 @@ fun DashboardScreenPreview() {
             onProfileClick = {},
             onCompleteClick = {},
             onAddTaskClick = {},
+            snackbarHostState = snackbarHostState,
         )
     }
 }

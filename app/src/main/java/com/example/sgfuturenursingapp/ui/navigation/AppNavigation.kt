@@ -3,12 +3,15 @@
 package com.example.sgfuturenursingapp.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardScreen
+import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardViewModel
 import com.example.sgfuturenursingapp.ui.screens.profile.ProfileScreen
 import com.example.sgfuturenursingapp.ui.screens.task.AddEditTaskScreen
 import com.example.sgfuturenursingapp.ui.screens.task.TaskDetailScreen
@@ -20,6 +23,7 @@ object ScreenRoutes {
     const val PROFILE = "profile"
     const val ADD_EDIT_TASK = "add_edit_task"
     const val TASK_ID = "taskId"
+    const val RESULT_MESSAGE = "resultMessage"
 }
 
 @Composable
@@ -27,7 +31,16 @@ fun AppNavigation() {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = ScreenRoutes.DASHBOARD) {
-        composable(ScreenRoutes.DASHBOARD) {
+        composable(ScreenRoutes.DASHBOARD) { backStackEntry ->
+            val dashboardViewModel = hiltViewModel<DashboardViewModel>()
+            val message = backStackEntry.savedStateHandle.get<String>(ScreenRoutes.RESULT_MESSAGE)
+            if (message != null) {
+                LaunchedEffect(message) {
+                    dashboardViewModel.showSnackbarMessage(message)
+                    backStackEntry.savedStateHandle.remove<String>(ScreenRoutes.RESULT_MESSAGE)
+                }
+            }
+
             DashboardScreen(
                 onTaskClick = { taskId ->
                     // Navigate to the task details page and pass the task ID
@@ -39,6 +52,7 @@ fun AppNavigation() {
                 onAddTaskClick = {
                     navController.navigate(ScreenRoutes.ADD_EDIT_TASK)
                 },
+                viewModel = dashboardViewModel,
             )
         }
 
@@ -73,7 +87,15 @@ fun AppNavigation() {
         ) {
             AddEditTaskScreen(
                 onNavigateUp = { navController.navigateUp() },
-                onSaveSuccess = { navController.navigateUp() },
+                onActionFinished = { message ->
+                    navController.getBackStackEntry(ScreenRoutes.DASHBOARD)
+                        .savedStateHandle
+                        .set(ScreenRoutes.RESULT_MESSAGE, message)
+                    navController.popBackStack(
+                        route = ScreenRoutes.DASHBOARD,
+                        inclusive = false,
+                    )
+                },
             )
         }
     }
