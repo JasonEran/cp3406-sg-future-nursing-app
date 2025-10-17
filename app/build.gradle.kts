@@ -2,14 +2,17 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.ktlint.gradle)
 }
 
 android {
-    namespace = "com.example.sg_future_nursing_app"
+    namespace = "com.example.sgfuturenursingapp"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.sg_future_nursing_app"
+        applicationId = "com.example.sgfuturenursingapp"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -23,7 +26,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -53,11 +56,28 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.gson)
+    kapt(libs.hilt.compiler)
+    kapt(libs.androidx.room.compiler)
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+ktlint {
+    android.set(false)
+    filter {
+        exclude("**/build/**")
+        include("**/src/**/*.kt")
+    }
 }
