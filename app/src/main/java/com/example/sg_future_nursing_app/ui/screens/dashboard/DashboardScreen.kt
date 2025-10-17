@@ -13,20 +13,34 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.sg_future_nursing_app.ui.components.TaskItem
+import com.example.sg_future_nursing_app.ui.data.DummyDataProvider
 import com.example.sg_future_nursing_app.ui.theme.CP3406SGFutureNursingAppTheme
+
+@Composable
+fun DashboardScreen(
+    onTaskClick: (Int) -> Unit,
+    onProfileClick: () -> Unit,
+    viewModel: DashboardViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    DashboardScreenContent(
+        uiState = uiState,
+        onTaskClick = onTaskClick,
+        onProfileClick = onProfileClick,
+        onCompleteClick = viewModel::completeTask
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(
-    viewModel: DashboardViewModel = viewModel(),
+private fun DashboardScreenContent(
+    uiState: DashboardUiState,
     onTaskClick: (Int) -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onCompleteClick: (Int) -> Unit
 ) {
-    // Observing UI status from the VNet
-    val uiState by viewModel.uiState.collectAsState()
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -61,7 +75,7 @@ fun DashboardScreen(
                 TaskItem(
                     task = task,
                     modifier = Modifier.clickable { onTaskClick(task.id) },
-                    onCompleteClick = { taskId -> viewModel.completeTask(taskId) }
+                    onCompleteClick = onCompleteClick
                 )
             }
         }
@@ -72,7 +86,11 @@ fun DashboardScreen(
 @Composable
 fun DashboardScreenPreview() {
     CP3406SGFutureNursingAppTheme {
-        // Cannot really click in preview, so pass empty Lambda
-        DashboardScreen(onTaskClick = {}, onProfileClick = {})
+        DashboardScreenContent(
+            uiState = DashboardUiState(tasks = DummyDataProvider.tasks),
+            onTaskClick = {},
+            onProfileClick = {},
+            onCompleteClick = {}
+        )
     }
 }
