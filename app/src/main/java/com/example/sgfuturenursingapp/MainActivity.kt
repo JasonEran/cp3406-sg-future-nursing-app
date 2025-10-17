@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
             CP3406SGFutureNursingAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     AppNavigation() // <-- Call the navigation component
                 }

@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:function-naming")
+
 package com.example.sgfuturenursingapp.ui.navigation
 
 import androidx.compose.runtime.Composable
@@ -5,8 +7,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardScreen
-import com.example.sgfuturenursingapp.ui.screens.task.TaskDetailScreen
 import com.example.sgfuturenursingapp.ui.screens.profile.ProfileScreen
+import com.example.sgfuturenursingapp.ui.screens.task.TaskDetailScreen
 
 // Define routing names for all screens
 object ScreenRoutes {
@@ -28,7 +30,7 @@ fun AppNavigation() {
                 },
                 onProfileClick = {
                     navController.navigate(ScreenRoutes.PROFILE)
-                }
+                },
             )
         }
 
@@ -36,13 +38,13 @@ fun AppNavigation() {
             val taskId = backStackEntry.arguments?.getString("taskId")
             TaskDetailScreen(
                 taskId = taskId,
-                onNavigateUp = { navController.navigateUp() }
+                onNavigateUp = { navController.navigateUp() },
             )
         }
 
         composable(ScreenRoutes.PROFILE) {
             ProfileScreen(
-                onNavigateUp = { navController.navigateUp() }
+                onNavigateUp = { navController.navigateUp() },
             )
         }
     }

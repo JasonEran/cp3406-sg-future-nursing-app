@@ -1,9 +1,24 @@
+@file:Suppress("ktlint:standard:function-naming")
+
 package com.example.sgfuturenursingapp.ui.screens.task
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -19,7 +34,7 @@ import com.example.sgfuturenursingapp.ui.theme.SuccessGreen
 fun TaskDetailScreen(
     taskId: String?,
     onNavigateUp: () -> Unit,
-    viewModel: TaskDetailViewModel = hiltViewModel()
+    viewModel: TaskDetailViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(taskId) {
         viewModel.loadTask(taskId)
@@ -35,35 +50,49 @@ fun TaskDetailScreen(
                     IconButton(onClick = onNavigateUp) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
         ) {
-            if (task != null) {
+            val currentTask = task
+            if (currentTask != null) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    Text("Category: ${task!!.category}", style = MaterialTheme.typography.titleLarge)
-                    Text("Time: ${task!!.time}", style = MaterialTheme.typography.bodyLarge)
-                    val statusText = if (task!!.isCompleted) "Status: Completed" else "Status: Pending"
-                    val statusColor = if (task!!.isCompleted) SuccessGreen else LocalContentColor.current
-                    Text(statusText, style = MaterialTheme.typography.bodyLarge, color = statusColor)
+                    Text(
+                        text = "Category: ${currentTask.category}",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                    Text(
+                        text = "Time: ${currentTask.time}",
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    val statusText =
+                        if (currentTask.isCompleted) "Status: Completed" else "Status: Pending"
+                    val statusColor =
+                        if (currentTask.isCompleted) SuccessGreen else LocalContentColor.current
+                    Text(
+                        text = statusText,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = statusColor,
+                    )
                 }
 
-                // If the task is not completed, display the button
-                if (!task!!.isCompleted) {
+                if (!currentTask.isCompleted) {
                     Button(
                         onClick = { viewModel.completeTask() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.BottomCenter),
                     ) {
                         Text("Mark as Complete")
                     }

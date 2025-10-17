@@ -11,5 +11,5 @@ data class Task(
     val category: String,
     val iconName: String,
     val isCompleted: Boolean,
-    val priority: Int = 0
+    val priority: Int = 0,
 )
