@@ -7,20 +7,22 @@ import com.example.sgfuturenursingapp.domain.usecase.UpdateTaskUseCase
 import com.example.sgfuturenursingapp.testing.MainDispatcherRule
 import com.example.sgfuturenursingapp.ui.data.Task
 import com.example.sgfuturenursingapp.ui.data.auth.AuthRepository
-import io.mockk.any
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class DashboardViewModelTest {
 
     @get:Rule
@@ -38,7 +40,6 @@ class DashboardViewModelTest {
         every { getTasksUseCase() } returns tasksFlow
         every { authRepository.authStateFlow() } returns flowOf(null)
         every { authRepository.getCurrentUserRole() } returns "Helper"
-        every { authRepository.getRoleForEmail(any()) } returns "Helper"
         coEvery { deleteTaskUseCase.invoke(any()) } returns Unit
 
         return DashboardViewModel(
@@ -65,15 +66,19 @@ class DashboardViewModelTest {
         tasksFlow.value = listOf(task)
 
         val viewModel = buildViewModel()
+        val job = launch { viewModel.uiState.collect() }
 
-        viewModel.onTaskDismissed(task)
-        advanceUntilIdle()
+        try {
+            viewModel.onTaskDismissed(task)
+            advanceUntilIdle()
 
-        val snackbar = viewModel.uiState.value.snackbar
-        assertNotNull(snackbar)
-        assertEquals("Task deleted", snackbar.message)
-        assertEquals(SnackbarType.UndoDelete, snackbar.type)
-        coVerify(exactly = 1) { deleteTaskUseCase.invoke(task.id) }
+            val snackbar = requireNotNull(viewModel.uiState.value.snackbar)
+            assertEquals("Task deleted", snackbar.message)
+            assertEquals(SnackbarType.UndoDelete, snackbar.type)
+            coVerify(exactly = 1) { deleteTaskUseCase.invoke(task.id) }
+        } finally {
+            job.cancel()
+        }
     }
 
     @Test

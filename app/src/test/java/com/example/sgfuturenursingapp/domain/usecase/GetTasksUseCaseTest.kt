@@ -8,9 +8,9 @@ import io.mockk.verify
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertSame
 
 class GetTasksUseCaseTest {
 

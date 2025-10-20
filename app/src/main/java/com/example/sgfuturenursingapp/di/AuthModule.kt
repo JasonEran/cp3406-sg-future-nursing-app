@@ -4,7 +4,7 @@ import com.example.sgfuturenursingapp.ui.data.auth.AuthRepository
 import com.example.sgfuturenursingapp.ui.data.auth.FirebaseAuthRepositoryImpl
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestoreSettings
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,9 +28,10 @@ object AuthModule {
     @Singleton
     fun provideFirebaseFirestore(): FirebaseFirestore =
         FirebaseFirestore.getInstance().apply {
-            firestoreSettings =
-                firestoreSettings {
-                    isPersistenceEnabled = true
-                }
+            val settings =
+                FirebaseFirestoreSettings.Builder()
+                    .setPersistenceEnabled(true)
+                    .build()
+            setFirestoreSettings(settings)
         }
 }
