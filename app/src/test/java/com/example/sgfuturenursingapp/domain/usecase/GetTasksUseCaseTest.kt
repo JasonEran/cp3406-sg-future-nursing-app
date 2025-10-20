@@ -8,9 +8,9 @@ import io.mockk.verify
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertSame
 
 class GetTasksUseCaseTest {
 
@@ -20,12 +20,12 @@ class GetTasksUseCaseTest {
     @Test
     fun `invoke returns repository tasks flow`() = runTest {
         val expectedFlow = flowOf(emptyList<Task>())
-        every { taskRepository.tasks } returns expectedFlow
+        every { taskRepository.getTasks() } returns expectedFlow
 
         val result = getTasksUseCase()
 
         assertSame(expectedFlow, result)
-        verify(exactly = 1) { taskRepository.tasks }
+        verify(exactly = 1) { taskRepository.getTasks() }
     }
 
     @Test
@@ -42,12 +42,12 @@ class GetTasksUseCaseTest {
                     priority = 1,
                 ),
             )
-        every { taskRepository.tasks } returns flowOf(taskList)
+        every { taskRepository.getTasks() } returns flowOf(taskList)
 
         val result = getTasksUseCase()
 
         val emitted = result.first()
         assertEquals(taskList, emitted)
-        verify(exactly = 1) { taskRepository.tasks }
+        verify(exactly = 1) { taskRepository.getTasks() }
     }
 }

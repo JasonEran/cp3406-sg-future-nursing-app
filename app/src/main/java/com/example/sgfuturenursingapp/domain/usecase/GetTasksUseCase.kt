@@ -10,5 +10,5 @@ class GetTasksUseCase
     constructor(
         private val taskRepository: TaskRepository,
     ) {
-        operator fun invoke(): Flow<List<Task>> = taskRepository.tasks
+        operator fun invoke(): Flow<List<Task>> = taskRepository.getTasks()
     }

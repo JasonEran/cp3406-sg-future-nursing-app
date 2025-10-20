@@ -13,7 +13,7 @@ import androidx.work.WorkerParameters
 import com.example.sgfuturenursingapp.MainActivity
 import com.example.sgfuturenursingapp.R
 import com.example.sgfuturenursingapp.ui.data.Task
-import com.example.sgfuturenursingapp.ui.data.TaskDao
+import com.example.sgfuturenursingapp.ui.data.TaskRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -36,8 +36,8 @@ class NotificationWorker(
             )
 
         val currentUser = entryPoint.firebaseAuth().currentUser ?: return Result.success()
-        val tasks = entryPoint.taskDao().getTasks(currentUser.uid).firstOrNull().orEmpty()
-        val pendingTasks = tasks.filter { !it.isCompleted }
+        val tasks = entryPoint.taskRepository().getTasks().firstOrNull().orEmpty()
+        val pendingTasks = tasks.filter { !it.isCompleted && it.userId == currentUser.uid }
 
         if (pendingTasks.isEmpty()) {
             return Result.success()
@@ -118,6 +118,6 @@ class NotificationWorker(
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface NotificationWorkerEntryPoint {
-    fun taskDao(): TaskDao
+    fun taskRepository(): TaskRepository
     fun firebaseAuth(): FirebaseAuth
 }
