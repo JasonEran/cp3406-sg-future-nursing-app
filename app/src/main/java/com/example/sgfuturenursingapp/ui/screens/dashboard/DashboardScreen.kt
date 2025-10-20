@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -191,7 +193,7 @@ private fun DashboardScreenContent(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Info,
-                            contentDescription = null,
+                            contentDescription = "No tasks available",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(56.dp),
                         )
@@ -340,7 +342,7 @@ private fun TaskList(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Delete,
-                            contentDescription = null,
+                            contentDescription = "Delete task",
                             tint = MaterialTheme.colorScheme.onErrorContainer,
                         )
                     }
@@ -348,7 +350,10 @@ private fun TaskList(
                 dismissContent = {
                     TaskItem(
                         task = task,
-                        modifier = Modifier.clickable { onTaskSelected(task.id) },
+                        modifier =
+                            Modifier
+                                .clickable { onTaskSelected(task.id) }
+                                .sizeIn(minHeight = 64.dp),
                         onCompleteClick = onCompleteClick,
                         isSelected = showSelection && task.id == selectedTaskId,
                     )
@@ -381,7 +386,7 @@ private fun TaskDetailPane(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Info,
-                    contentDescription = null,
+                    contentDescription = "Select a task to view details",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(36.dp),
                 )
@@ -435,14 +440,20 @@ private fun TaskDetailPane(
                 ) {
                     OutlinedButton(
                         onClick = { onOpenTask(task.id) },
-                        modifier = Modifier.weight(1f),
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .heightIn(min = 48.dp),
                     ) {
                         Text("Open Details")
                     }
                     if (!task.isCompleted) {
                         Button(
                             onClick = { onMarkComplete(task.id) },
-                            modifier = Modifier.weight(1f),
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .heightIn(min = 48.dp),
                         ) {
                             Text("Mark Complete")
                         }

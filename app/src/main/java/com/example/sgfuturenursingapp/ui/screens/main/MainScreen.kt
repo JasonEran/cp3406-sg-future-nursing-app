@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -115,7 +116,10 @@ private fun FeatureCard(
 ) {
     ElevatedCard(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .sizeIn(minHeight = 72.dp),
         shape = RoundedCornerShape(24.dp),
         colors =
             CardDefaults.cardColors(
@@ -189,7 +193,7 @@ private fun FeatureSection(
                     iconContent = {
                         Icon(
                             imageVector = Icons.Default.CalendarToday,
-                            contentDescription = null,
+                            contentDescription = "Calendar representing today's care plan",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(32.dp),
                         )
@@ -203,7 +207,7 @@ private fun FeatureSection(
                     iconContent = {
                         Icon(
                             imageVector = Icons.Default.HealthAndSafety,
-                            contentDescription = null,
+                            contentDescription = "Health insights and news",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(32.dp),
                         )
@@ -226,7 +230,7 @@ private fun FeatureSection(
                     iconContent = {
                         Icon(
                             imageVector = Icons.Default.CalendarToday,
-                            contentDescription = null,
+                            contentDescription = "Calendar representing today's care plan",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(40.dp),
                         )
@@ -241,7 +245,7 @@ private fun FeatureSection(
                     iconContent = {
                         Icon(
                             imageVector = Icons.Default.HealthAndSafety,
-                            contentDescription = null,
+                            contentDescription = "Health insights and news",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(40.dp),
                         )

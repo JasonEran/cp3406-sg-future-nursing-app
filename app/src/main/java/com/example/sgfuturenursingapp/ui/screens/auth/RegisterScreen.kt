@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -133,7 +135,10 @@ private fun RegisterScreenContent(
                 )
             } ?: Spacer(modifier = Modifier.height(8.dp))
 
-            TextButton(onClick = onNavigateToLogin) {
+            TextButton(
+                onClick = onNavigateToLogin,
+                modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+            ) {
                 Text(text = "Already have an account? Sign in")
             }
 
@@ -209,7 +214,10 @@ private fun RegisterForm(
                 }
             },
             enabled = !uiState.isLoading && uiState.isFormValid,
-            modifier = Modifier.fillMaxWidth(),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp),
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(

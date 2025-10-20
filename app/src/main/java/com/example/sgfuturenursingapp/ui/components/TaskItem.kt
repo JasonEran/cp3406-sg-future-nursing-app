@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Event
@@ -79,7 +80,10 @@ fun TaskItem(
                     tint = SuccessGreen,
                 )
             } else {
-                OutlinedButton(onClick = { onCompleteClick(task.id) }) {
+                OutlinedButton(
+                    onClick = { onCompleteClick(task.id) },
+                    modifier = Modifier.defaultMinSize(minHeight = 48.dp),
+                ) {
                     Text("Complete")
                 }
             }

@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -150,7 +152,10 @@ private fun ForgotPasswordContent(
                 )
             }
 
-            TextButton(onClick = onNavigateBack) {
+            TextButton(
+                onClick = onNavigateBack,
+                modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+            ) {
                 Text(text = "Back to sign in")
             }
         }
@@ -200,7 +205,10 @@ private fun ForgotPasswordForm(
                 }
             },
             enabled = uiState.canSubmit && !uiState.isLoading,
-            modifier = Modifier.fillMaxWidth(),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp),
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(
