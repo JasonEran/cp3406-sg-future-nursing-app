@@ -109,7 +109,7 @@ fun MainScreen(
 
                 FeatureCard(
                     title = "Health Insights",
-                    description = "Browse the latest health news and tips.",
+                    description = "Browse the latest health news and practical tips.",
                     iconContent = {
                         Icon(
                             imageVector = Icons.Default.HealthAndSafety,

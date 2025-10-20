@@ -236,7 +236,7 @@ private fun LoginForm(
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(text = "跳过登录（开发用）")
+                Text(text = "Skip login (development only)")
             }
         }
     }
