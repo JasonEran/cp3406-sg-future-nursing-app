@@ -8,7 +8,10 @@ import com.example.sgfuturenursingapp.domain.usecase.LogoutUserUseCase
 import com.example.sgfuturenursingapp.domain.usecase.ObserveAuthStateUseCase
 import com.example.sgfuturenursingapp.domain.usecase.RegisterUserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -96,6 +99,9 @@ class AuthViewModel
                         }
                     },
                     onFailure = { throwable ->
+                        if (throwable !is CancellationException) {
+                            Firebase.crashlytics.recordException(throwable)
+                        }
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
@@ -141,6 +147,9 @@ class AuthViewModel
                         }
                     },
                     onFailure = { throwable ->
+                        if (throwable !is CancellationException) {
+                            Firebase.crashlytics.recordException(throwable)
+                        }
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
@@ -168,6 +177,9 @@ class AuthViewModel
                         }
                     },
                     onFailure = { throwable ->
+                        if (throwable !is CancellationException) {
+                            Firebase.crashlytics.recordException(throwable)
+                        }
                         _uiState.update {
                             it.copy(
                                 isLoading = false,

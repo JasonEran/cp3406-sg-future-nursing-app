@@ -2,11 +2,13 @@
 
 package com.example.sgfuturenursingapp.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Event
@@ -32,12 +34,29 @@ import com.example.sgfuturenursingapp.ui.theme.SuccessGreen
 fun TaskItem(
     task: Task,
     modifier: Modifier = Modifier,
+    isSelected: Boolean = false,
     onCompleteClick: (Int) -> Unit,
 ) {
+    val containerColor =
+        if (isSelected) {
+            MaterialTheme.colorScheme.surfaceVariant
+        } else {
+            MaterialTheme.colorScheme.surface
+        }
+    val border =
+        if (isSelected) {
+            BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
+        } else {
+            null
+        }
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation =
+            CardDefaults.cardElevation(
+                defaultElevation = if (isSelected) 6.dp else 2.dp,
+            ),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        border = border,
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -61,7 +80,10 @@ fun TaskItem(
                     tint = SuccessGreen,
                 )
             } else {
-                OutlinedButton(onClick = { onCompleteClick(task.id) }) {
+                OutlinedButton(
+                    onClick = { onCompleteClick(task.id) },
+                    modifier = Modifier.defaultMinSize(minHeight = 48.dp),
+                ) {
                     Text("Complete")
                 }
             }

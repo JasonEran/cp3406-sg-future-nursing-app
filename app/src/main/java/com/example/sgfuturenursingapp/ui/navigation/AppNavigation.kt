@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -49,7 +50,7 @@ object ScreenRoutes {
 }
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(windowSizeClass: WindowSizeClass) {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = hiltViewModel()
     val authUiState by authViewModel.uiState.collectAsStateWithLifecycle()
@@ -139,7 +140,10 @@ fun AppNavigation() {
         }
 
         composable(ScreenRoutes.MAIN) {
-            MainScreen(navController = navController)
+            MainScreen(
+                navController = navController,
+                windowSizeClass = windowSizeClass,
+            )
         }
 
         composable(ScreenRoutes.DASHBOARD) { backStackEntry ->
@@ -164,6 +168,7 @@ fun AppNavigation() {
                     navController.navigate(ScreenRoutes.ADD_EDIT_TASK)
                 },
                 viewModel = dashboardViewModel,
+                windowSizeClass = windowSizeClass,
             )
         }
 

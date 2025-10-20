@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -141,11 +143,17 @@ private fun LoginScreenContent(
                 )
             } ?: Spacer(modifier = Modifier.height(8.dp))
 
-            TextButton(onClick = onNavigateToRegister) {
+            TextButton(
+                onClick = onNavigateToRegister,
+                modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+            ) {
                 Text(text = "Don't have an account? Sign up")
             }
 
-            TextButton(onClick = onNavigateToForgotPassword) {
+            TextButton(
+                onClick = onNavigateToForgotPassword,
+                modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+            ) {
                 Text(text = "Forgot your password?")
             }
 
@@ -216,7 +224,10 @@ private fun LoginForm(
                 }
             },
             enabled = !uiState.isLoading && uiState.isFormValid,
-            modifier = Modifier.fillMaxWidth(),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp),
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(
@@ -234,7 +245,10 @@ private fun LoginForm(
                     focusManager.clearFocus()
                     onSkipLogin()
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp),
             ) {
                 Text(text = "Skip login (development only)")
             }
