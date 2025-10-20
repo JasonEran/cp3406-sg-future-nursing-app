@@ -2,8 +2,19 @@
 
 package com.example.sgfuturenursingapp.ui.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -15,16 +26,21 @@ import com.example.sgfuturenursingapp.ui.screens.auth.LoginScreen
 import com.example.sgfuturenursingapp.ui.screens.auth.RegisterScreen
 import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardScreen
 import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardViewModel
+import com.example.sgfuturenursingapp.ui.screens.main.MainScreen
+import com.example.sgfuturenursingapp.ui.screens.news.HealthNewsScreen
 import com.example.sgfuturenursingapp.ui.screens.profile.ProfileScreen
 import com.example.sgfuturenursingapp.ui.screens.task.AddEditTaskScreen
 import com.example.sgfuturenursingapp.ui.screens.task.TaskDetailScreen
+import com.example.sgfuturenursingapp.ui.screens.auth.AuthViewModel
 
 // Define routing names for all screens
 object ScreenRoutes {
     const val LOGIN = "login"
+    const val MAIN = "main"
     const val REGISTER = "register"
     const val FORGOT_PASSWORD = "forgot_password"
     const val DASHBOARD = "dashboard"
+    const val HEALTH_NEWS = "health_news"
     const val TASK_DETAIL = "task_detail"
     const val PROFILE = "profile"
     const val ADD_EDIT_TASK = "add_edit_task"
@@ -35,8 +51,50 @@ object ScreenRoutes {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val authViewModel: AuthViewModel = hiltViewModel()
+    val authUiState by authViewModel.uiState.collectAsStateWithLifecycle()
+    var initialDestination by rememberSaveable { mutableStateOf<String?>(null) }
+    var previousAuthStatus by remember { mutableStateOf<Boolean?>(null) }
 
-    NavHost(navController = navController, startDestination = ScreenRoutes.LOGIN) {
+    LaunchedEffect(authUiState.isLoading, authUiState.isAuthenticated) {
+        if (!authUiState.isLoading && initialDestination == null) {
+            initialDestination =
+                if (authUiState.isAuthenticated) {
+                    ScreenRoutes.MAIN
+                } else {
+                    ScreenRoutes.LOGIN
+                }
+        }
+
+        val lastStatus = previousAuthStatus
+        if (lastStatus == true && !authUiState.isAuthenticated) {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route
+            if (currentRoute != ScreenRoutes.LOGIN) {
+                navController.navigate(ScreenRoutes.LOGIN) {
+                    popUpTo(ScreenRoutes.MAIN) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+        }
+
+        if (!authUiState.isLoading) {
+            previousAuthStatus = authUiState.isAuthenticated
+        }
+    }
+
+    val startDestination = initialDestination
+
+    if (startDestination == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    NavHost(navController = navController, startDestination = startDestination) {
         composable(ScreenRoutes.LOGIN) {
             LoginScreen(
                 onNavigateToRegister = {
@@ -50,11 +108,12 @@ fun AppNavigation() {
                     }
                 },
                 onLoginSuccess = {
-                    navController.navigate(ScreenRoutes.DASHBOARD) {
+                    navController.navigate(ScreenRoutes.MAIN) {
                         popUpTo(ScreenRoutes.LOGIN) { inclusive = true }
                         launchSingleTop = true
                     }
                 },
+                viewModel = authViewModel,
             )
         }
 
@@ -64,11 +123,12 @@ fun AppNavigation() {
                     navController.popBackStack(ScreenRoutes.LOGIN, inclusive = false)
                 },
                 onRegisterSuccess = {
-                    navController.navigate(ScreenRoutes.DASHBOARD) {
+                    navController.navigate(ScreenRoutes.MAIN) {
                         popUpTo(ScreenRoutes.LOGIN) { inclusive = true }
                         launchSingleTop = true
                     }
                 },
+                viewModel = authViewModel,
             )
         }
 
@@ -76,6 +136,10 @@ fun AppNavigation() {
             ForgotPasswordScreen(
                 onNavigateBack = { navController.popBackStack() },
             )
+        }
+
+        composable(ScreenRoutes.MAIN) {
+            MainScreen(navController = navController)
         }
 
         composable(ScreenRoutes.DASHBOARD) { backStackEntry ->
@@ -120,6 +184,10 @@ fun AppNavigation() {
             ProfileScreen(
                 onNavigateUp = { navController.navigateUp() },
             )
+        }
+
+        composable(ScreenRoutes.HEALTH_NEWS) {
+            HealthNewsScreen()
         }
 
         composable(

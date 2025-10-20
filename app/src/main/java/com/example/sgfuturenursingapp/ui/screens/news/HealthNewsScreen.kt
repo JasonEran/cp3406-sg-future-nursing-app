@@ -157,7 +157,7 @@ private fun EmptyState(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = "健康资讯",
+            text = "Health News",
             style = MaterialTheme.typography.headlineSmall,
         )
         Text(
