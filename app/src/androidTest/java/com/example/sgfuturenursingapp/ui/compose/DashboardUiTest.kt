@@ -1,6 +1,8 @@
 package com.example.sgfuturenursingapp.ui.compose
 
 import androidx.activity.ComponentActivity
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
@@ -91,6 +93,7 @@ class DashboardUiTest {
         coEvery { getTaskByIdUseCase.invoke(any()) } returns null
     }
 
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     @Test
     fun dashboardDisplaysTaskTitles() {
         val task =
@@ -109,11 +112,13 @@ class DashboardUiTest {
 
         composeRule.setContent {
             CP3406SGFutureNursingAppTheme {
+                val windowSizeClass = calculateWindowSizeClass(activity = composeRule.activity)
                 DashboardScreen(
                     onTaskClick = {},
                     onProfileClick = {},
                     onAddTaskClick = {},
                     viewModel = dashboardViewModel,
+                    windowSizeClass = windowSizeClass,
                 )
             }
         }
@@ -121,6 +126,7 @@ class DashboardUiTest {
         composeRule.onNodeWithText(task.title).assertIsDisplayed()
     }
 
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     @Test
     fun addTaskFlowAddsItemToDashboard() {
         tasksFlow = MutableStateFlow(emptyList())
@@ -139,6 +145,7 @@ class DashboardUiTest {
                             onProfileClick = {},
                             onAddTaskClick = { navController.navigate("addTask") },
                             viewModel = dashboardViewModel,
+                            windowSizeClass = calculateWindowSizeClass(activity = composeRule.activity),
                         )
                     }
                     composable("addTask") {
