@@ -22,6 +22,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.sgfuturenursingapp.ui.screens.admin.AdminDashboardScreen
+import com.example.sgfuturenursingapp.ui.screens.admin.HelperManagementScreen
 import com.example.sgfuturenursingapp.ui.screens.auth.ForgotPasswordScreen
 import com.example.sgfuturenursingapp.ui.screens.auth.LoginScreen
 import com.example.sgfuturenursingapp.ui.screens.auth.RegisterScreen
@@ -41,6 +43,8 @@ object ScreenRoutes {
     const val REGISTER = "register"
     const val FORGOT_PASSWORD = "forgot_password"
     const val DASHBOARD = "dashboard"
+    const val ADMIN_DASHBOARD = "admin_dashboard"
+    const val HELPER_MANAGEMENT = "helper_management"
     const val HEALTH_NEWS = "health_news"
     const val TASK_DETAIL = "task_detail"
     const val PROFILE = "profile"
@@ -109,9 +113,25 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
                     }
                 },
                 onLoginSuccess = {
-                    navController.navigate(ScreenRoutes.MAIN) {
-                        popUpTo(ScreenRoutes.LOGIN) { inclusive = true }
-                        launchSingleTop = true
+                    val currentRole =
+                        authViewModel.uiState.value.userEmail?.let { email ->
+                            when {
+                                email.contains("admin", ignoreCase = true) -> "Admin"
+                                email.contains("primary", ignoreCase = true) -> "Primary Caregiver"
+                                else -> "Helper"
+                            }
+                        } ?: "Helper"
+
+                    if (currentRole == "Admin") {
+                        navController.navigate(ScreenRoutes.ADMIN_DASHBOARD) {
+                            popUpTo(ScreenRoutes.LOGIN) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    } else {
+                        navController.navigate(ScreenRoutes.MAIN) {
+                            popUpTo(ScreenRoutes.LOGIN) { inclusive = true }
+                            launchSingleTop = true
+                        }
                     }
                 },
                 viewModel = authViewModel,
@@ -144,6 +164,14 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
                 navController = navController,
                 windowSizeClass = windowSizeClass,
             )
+        }
+
+        composable(ScreenRoutes.ADMIN_DASHBOARD) {
+            AdminDashboardScreen()
+        }
+
+        composable(ScreenRoutes.HELPER_MANAGEMENT) {
+            HelperManagementScreen()
         }
 
         composable(ScreenRoutes.DASHBOARD) { backStackEntry ->
