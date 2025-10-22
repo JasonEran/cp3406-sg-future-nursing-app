@@ -30,24 +30,36 @@ class FirestoreTaskRepositoryImpl
                 .authStateFlow()
                 .flatMapLatest { user ->
                     val userId = user?.uid ?: return@flatMapLatest flowOf(emptyList())
-                    tasksCollection(userId)
-                        .orderBy(TASK_FIELD_ID, Query.Direction.ASCENDING)
-                        .snapshotFlow()
-                        .map { snapshot ->
-                            snapshot.documents
-                                .mapNotNull { document ->
-                                    document.toObject<TaskFirestoreDto>()?.toDomain()
-                                }.sortedWith(
-                                    compareByDescending<Task> { it.priority }
-                                        .thenBy { it.time },
-                                )
-                        }.distinctUntilChanged()
+                    userDocument(userId)
+                        .snapshots()
+                        .flatMapLatest { userSnapshot ->
+                            val careGroupId =
+                                userSnapshot
+                                    .toObject<User>()
+                                    ?.careGroupId
+                            if (careGroupId.isNullOrBlank()) {
+                                flowOf(emptyList())
+                            } else {
+                                careGroupTasksCollection(careGroupId)
+                                    .orderBy(TASK_FIELD_ID, Query.Direction.ASCENDING)
+                                    .snapshotFlow()
+                                    .map { snapshot ->
+                                        snapshot.documents
+                                            .mapNotNull { document ->
+                                                document.toObject<TaskFirestoreDto>()?.toDomain()
+                                            }.sortedWith(
+                                                compareByDescending<Task> { it.priority }
+                                                    .thenBy { it.time },
+                                            )
+                                    }.distinctUntilChanged()
+                            }
+                        }
                 }.flowOn(Dispatchers.IO)
 
         override suspend fun getTaskById(taskId: Int): Task? {
-            val userId = requireUserId()
+            val (_, careGroupId) = requireUserContext()
             val snapshot =
-                tasksCollection(userId)
+                careGroupTasksCollection(careGroupId)
                     .document(taskId.toString())
                     .get()
                     .await()
@@ -55,9 +67,9 @@ class FirestoreTaskRepositoryImpl
         }
 
         override suspend fun upsertTask(task: Task): Task {
-            val userId = requireUserId()
+            val (userId, careGroupId) = requireUserContext()
             val taskToSave = task.copy(userId = userId)
-            tasksCollection(userId)
+            careGroupTasksCollection(careGroupId)
                 .document(taskToSave.id.toString())
                 .set(taskToSave.toDto())
                 .await()
@@ -65,32 +77,19 @@ class FirestoreTaskRepositoryImpl
         }
 
         override suspend fun completeTask(taskId: Int) {
-            val userId = requireUserId()
-            tasksCollection(userId)
+            val (_, careGroupId) = requireUserContext()
+            careGroupTasksCollection(careGroupId)
                 .document(taskId.toString())
                 .update(TASK_FIELD_IS_COMPLETED, true)
                 .await()
         }
 
-        override suspend fun getNextTaskId(): Int {
-            val userId = requireUserId()
-            val snapshot =
-                tasksCollection(userId)
-                    .orderBy(TASK_FIELD_ID, Query.Direction.DESCENDING)
-                    .limit(1)
-                    .get()
-                    .await()
-            val currentMax =
-                snapshot.documents
-                    .firstOrNull()
-                    ?.getLong(TASK_FIELD_ID)
-                    ?.toInt() ?: 0
-            return currentMax + 1
-        }
+        override suspend fun getNextTaskId(): Int =
+            error("getNextTaskId is not supported for group-based tasks. ID generation will be handled separately.")
 
         override suspend fun deleteTask(taskId: Int) {
-            val userId = requireUserId()
-            tasksCollection(userId)
+            val (_, careGroupId) = requireUserContext()
+            careGroupTasksCollection(careGroupId)
                 .document(taskId.toString())
                 .delete()
                 .await()
@@ -100,10 +99,32 @@ class FirestoreTaskRepositoryImpl
             authRepository.getCurrentUser()?.uid
                 ?: error("No authenticated user found. Please log in to manage tasks.")
 
-        private fun tasksCollection(userId: String) =
+        private suspend fun requireCareGroupId(userId: String): String {
+            val snapshot =
+                userDocument(userId)
+                    .get()
+                    .await()
+            return snapshot
+                .toObject<User>()
+                ?.careGroupId
+                ?: error("User $userId is not assigned to a care group.")
+        }
+
+        private suspend fun requireUserContext(): Pair<String, String> {
+            val userId = requireUserId()
+            val careGroupId = requireCareGroupId(userId)
+            return userId to careGroupId
+        }
+
+        private fun userDocument(userId: String) =
             firestore
                 .collection(USERS_COLLECTION)
                 .document(userId)
+
+        private fun careGroupTasksCollection(groupId: String) =
+            firestore
+                .collection(CARE_GROUPS_COLLECTION)
+                .document(groupId)
                 .collection(TASKS_COLLECTION)
 
         private data class TaskFirestoreDto(
@@ -145,6 +166,7 @@ class FirestoreTaskRepositoryImpl
 
         private companion object {
             const val USERS_COLLECTION = "users"
+            const val CARE_GROUPS_COLLECTION = "care_groups"
             const val TASKS_COLLECTION = "tasks"
             const val TASK_FIELD_ID = "id"
             const val TASK_FIELD_IS_COMPLETED = "isCompleted"
