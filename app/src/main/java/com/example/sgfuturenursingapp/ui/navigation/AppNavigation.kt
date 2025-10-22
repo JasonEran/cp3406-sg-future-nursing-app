@@ -24,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.sgfuturenursingapp.ui.screens.admin.AdminDashboardScreen
 import com.example.sgfuturenursingapp.ui.screens.admin.HelperManagementScreen
+import com.example.sgfuturenursingapp.ui.screens.auth.AdminLoginScreen
 import com.example.sgfuturenursingapp.ui.screens.auth.ForgotPasswordScreen
 import com.example.sgfuturenursingapp.ui.screens.auth.LoginScreen
 import com.example.sgfuturenursingapp.ui.screens.auth.RegisterScreen
@@ -41,6 +42,7 @@ object ScreenRoutes {
     const val LOGIN = "login"
     const val MAIN = "main"
     const val REGISTER = "register"
+    const val ADMIN_LOGIN = "admin_login"
     const val FORGOT_PASSWORD = "forgot_password"
     const val DASHBOARD = "dashboard"
     const val ADMIN_DASHBOARD = "admin_dashboard"
@@ -112,6 +114,11 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
                         launchSingleTop = true
                     }
                 },
+                onNavigateToAdminLogin = {
+                    navController.navigate(ScreenRoutes.ADMIN_LOGIN) {
+                        launchSingleTop = true
+                    }
+                },
                 onLoginSuccess = {
                     val currentRole =
                         authViewModel.uiState.value.userEmail?.let { email ->
@@ -132,6 +139,19 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
                             popUpTo(ScreenRoutes.LOGIN) { inclusive = true }
                             launchSingleTop = true
                         }
+                    }
+                },
+                viewModel = authViewModel,
+            )
+        }
+
+        composable(ScreenRoutes.ADMIN_LOGIN) {
+            AdminLoginScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onAdminLoginSuccess = {
+                    navController.navigate(ScreenRoutes.ADMIN_DASHBOARD) {
+                        popUpTo(ScreenRoutes.LOGIN) { inclusive = true }
+                        launchSingleTop = true
                     }
                 },
                 viewModel = authViewModel,
