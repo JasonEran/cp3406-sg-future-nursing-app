@@ -10,7 +10,9 @@ plugins {
 }
 
 val newsApiBaseUrl = "https://newsapi.org/v2/"
-val newsApiKey = project.findProperty("NEWS_API_KEY") as? String ?: ""
+val newsApiKey = project.findProperty("NEWS_API_KEY") as? String ?: "9594da9dd0c44e55979fdf756d90cddc"
+val adminDemoEmail = project.findProperty("ADMIN_DEMO_EMAIL") as? String ?: "admin@test.com"
+val adminDemoPassword = project.findProperty("ADMIN_DEMO_PASSWORD") as? String ?: ""
 
 android {
     namespace = "com.example.sgfuturenursingapp"
@@ -26,6 +28,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "NEWS_API_BASE_URL", "\"$newsApiBaseUrl\"")
         buildConfigField("String", "NEWS_API_KEY", "\"$newsApiKey\"")
+        buildConfigField("String", "ADMIN_DEMO_EMAIL", "\"$adminDemoEmail\"")
+        buildConfigField("String", "ADMIN_DEMO_PASSWORD", "\"$adminDemoPassword\"")
     }
 
     buildTypes {
