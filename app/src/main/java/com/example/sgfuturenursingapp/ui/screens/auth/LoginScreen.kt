@@ -238,6 +238,15 @@ private fun LoginForm(
             Text(text = if (uiState.isLoading) "Signing in..." else "Sign in")
         }
 
+        Spacer(modifier = Modifier.height(12.dp))
+
+        TextButton(
+            onClick = {},
+            modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+        ) {
+            Text(text = "Log in as Administrator")
+        }
+
         if (BuildConfig.DEBUG) {
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedButton(
