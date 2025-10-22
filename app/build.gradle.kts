@@ -10,7 +10,7 @@ plugins {
 }
 
 val newsApiBaseUrl = "https://newsapi.org/v2/"
-val newsApiKey = project.findProperty("NEWS_API_KEY") as? String ?: ""
+val newsApiKey = project.findProperty("NEWS_API_KEY") as? String ?: "9594da9dd0c44e55979fdf756d90cddc"
 
 android {
     namespace = "com.example.sgfuturenursingapp"
