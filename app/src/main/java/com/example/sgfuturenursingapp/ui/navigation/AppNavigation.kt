@@ -187,7 +187,18 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
         }
 
         composable(ScreenRoutes.ADMIN_DASHBOARD) {
-            AdminDashboardScreen()
+            AdminDashboardScreen(
+                onManageTeam = {
+                    navController.navigate(ScreenRoutes.HELPER_MANAGEMENT) {
+                        launchSingleTop = true
+                    }
+                },
+                onViewSharedTasks = {
+                    navController.navigate(ScreenRoutes.DASHBOARD) {
+                        launchSingleTop = true
+                    }
+                },
+            )
         }
 
         composable(ScreenRoutes.HELPER_MANAGEMENT) {

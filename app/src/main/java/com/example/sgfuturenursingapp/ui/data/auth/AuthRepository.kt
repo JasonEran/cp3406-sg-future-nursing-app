@@ -12,4 +12,5 @@ interface AuthRepository {
     suspend fun sendPasswordResetEmail(email: String): Result<Unit>
     fun getCurrentUserRole(): String?
     fun getRoleForEmail(email: String): String
+    suspend fun ensureCurrentUserRecord()
 }

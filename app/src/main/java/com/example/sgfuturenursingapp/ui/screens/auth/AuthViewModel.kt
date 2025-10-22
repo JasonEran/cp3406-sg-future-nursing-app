@@ -2,6 +2,7 @@ package com.example.sgfuturenursingapp.ui.screens.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.sgfuturenursingapp.domain.usecase.EnsureCurrentUserRecordUseCase
 import com.example.sgfuturenursingapp.domain.usecase.GetCurrentUserUseCase
 import com.example.sgfuturenursingapp.domain.usecase.LoginUserUseCase
 import com.example.sgfuturenursingapp.domain.usecase.LogoutUserUseCase
@@ -39,6 +40,7 @@ class AuthViewModel
         private val logoutUserUseCase: LogoutUserUseCase,
         private val getCurrentUserUseCase: GetCurrentUserUseCase,
         private val observeAuthStateUseCase: ObserveAuthStateUseCase,
+        private val ensureCurrentUserRecordUseCase: EnsureCurrentUserRecordUseCase,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(AuthUiState(isLoading = true))
         val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
@@ -206,8 +208,22 @@ class AuthViewModel
                         errorMessage = null,
                     )
                 }
+                if (currentUser != null) {
+                    try {
+                        ensureCurrentUserRecordUseCase()
+                    } catch (ignored: Throwable) {
+                        // Intentionally ignore to avoid blocking UI if record sync fails
+                    }
+                }
 
                 observeAuthStateUseCase().collect { user ->
+                    if (user != null) {
+                        try {
+                            ensureCurrentUserRecordUseCase()
+                        } catch (ignored: Throwable) {
+                            // Intentionally ignore to avoid blocking UI if record sync fails
+                        }
+                    }
                     _uiState.update {
                         it.copy(
                             email = user?.email ?: it.email,

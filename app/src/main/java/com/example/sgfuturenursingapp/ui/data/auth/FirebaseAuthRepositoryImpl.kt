@@ -77,6 +77,11 @@ class FirebaseAuthRepositoryImpl
 
         override fun getRoleForEmail(email: String): String = determineRole(email)
 
+        override suspend fun ensureCurrentUserRecord() {
+            val currentUser = firebaseAuth.currentUser ?: return
+            ensureUserRecord(currentUser)
+        }
+
         private fun determineRole(email: String): String =
             when {
                 email.contains("admin", ignoreCase = true) -> "Admin"
