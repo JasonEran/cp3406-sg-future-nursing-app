@@ -36,6 +36,7 @@ for %%i in ("%APP_HOME%") do set APP_HOME=%%~fi
 set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m"
 
 @rem Find java.exe
+if not defined JAVA_HOME call :findAndroidStudioJbr
 if defined JAVA_HOME goto findJavaFromJavaHome
 
 set JAVA_EXE=java.exe
@@ -49,6 +50,18 @@ echo Please set the JAVA_HOME variable in your environment to match the
 echo location of your Java installation.
 
 goto fail
+
+:findAndroidStudioJbr
+if exist "%ProgramFiles%\Android\Android Studio\jbr\bin\java.exe" (
+    set "JAVA_HOME=%ProgramFiles%\Android\Android Studio\jbr"
+    exit /b
+)
+if defined ProgramFiles(x86) (
+    if exist "%ProgramFiles(x86)%\Android\Android Studio\jbr\bin\java.exe" (
+        set "JAVA_HOME=%ProgramFiles(x86)%\Android\Android Studio\jbr"
+    )
+)
+exit /b
 
 :findJavaFromJavaHome
 set JAVA_HOME=%JAVA_HOME:"=%
