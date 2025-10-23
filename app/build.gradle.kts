@@ -106,7 +106,7 @@ dependencies {
 }
 
 dependencyCheck {
-    failOnCVSS = 7.0F
+    failBuildOnCVSS = 7.0F
 }
 
 ktlint {
