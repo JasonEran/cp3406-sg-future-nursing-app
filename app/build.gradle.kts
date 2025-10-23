@@ -107,6 +107,13 @@ dependencies {
 
 dependencyCheck {
     failBuildOnCVSS = 7.0F
+    val resolvedNvdApiKey = project.findProperty("NVD_API_KEY") as? String
+        ?: System.getenv("NVD_API_KEY")
+    nvd.apply {
+        if (!resolvedNvdApiKey.isNullOrBlank()) {
+            apiKey = resolvedNvdApiKey
+        }
+    }
 }
 
 ktlint {

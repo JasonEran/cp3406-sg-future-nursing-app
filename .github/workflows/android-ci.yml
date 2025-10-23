@@ -62,6 +62,8 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Scan for vulnerabilities
+        env:
+          NVD_API_KEY: 334a81b3-ba2e-4556-8cb8-76599930f209
         run: ./gradlew dependencyCheckAnalyze
 
   build:
