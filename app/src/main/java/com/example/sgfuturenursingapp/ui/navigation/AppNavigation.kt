@@ -247,6 +247,17 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
         composable(ScreenRoutes.PROFILE) {
             ProfileScreen(
                 onNavigateUp = { navController.navigateUp() },
+                onManageTeam = {
+                    navController.navigate(ScreenRoutes.HELPER_MANAGEMENT) {
+                        launchSingleTop = true
+                    }
+                },
+                onLogoutSuccess = {
+                    navController.navigate(ScreenRoutes.LOGIN) {
+                        popUpTo(ScreenRoutes.MAIN) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
             )
         }
 
