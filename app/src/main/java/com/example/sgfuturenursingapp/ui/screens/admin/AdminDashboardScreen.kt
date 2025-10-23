@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 fun AdminDashboardScreen(
     onManageTeam: () -> Unit,
     onViewSharedTasks: () -> Unit,
+    onViewAnalytics: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -69,6 +70,13 @@ fun AdminDashboardScreen(
                 description = "Create and monitor shared tasks for everyone in your care group.",
                 buttonLabel = "View Tasks",
                 onClick = onViewSharedTasks,
+            )
+
+            AdminActionCard(
+                title = "Analytics Overview",
+                description = "Visualise team productivity and task completion trends.",
+                buttonLabel = "Open Analytics",
+                onClick = onViewAnalytics,
             )
 
             Spacer(modifier = Modifier.weight(1f, fill = true))

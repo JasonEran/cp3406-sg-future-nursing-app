@@ -28,6 +28,7 @@ import com.example.sgfuturenursingapp.ui.screens.auth.AdminLoginScreen
 import com.example.sgfuturenursingapp.ui.screens.auth.ForgotPasswordScreen
 import com.example.sgfuturenursingapp.ui.screens.auth.LoginScreen
 import com.example.sgfuturenursingapp.ui.screens.auth.RegisterScreen
+import com.example.sgfuturenursingapp.ui.screens.analytics.AnalyticsScreen
 import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardScreen
 import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardViewModel
 import com.example.sgfuturenursingapp.ui.screens.main.MainScreen
@@ -48,6 +49,7 @@ object ScreenRoutes {
     const val ADMIN_DASHBOARD = "admin_dashboard"
     const val HELPER_MANAGEMENT = "helper_management"
     const val HEALTH_NEWS = "health_news"
+    const val ANALYTICS = "analytics"
     const val TASK_DETAIL = "task_detail"
     const val PROFILE = "profile"
     const val ADD_EDIT_TASK = "add_edit_task"
@@ -198,6 +200,11 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
                         launchSingleTop = true
                     }
                 },
+                onViewAnalytics = {
+                    navController.navigate(ScreenRoutes.ANALYTICS) {
+                        launchSingleTop = true
+                    }
+                },
             )
         }
 
@@ -263,6 +270,12 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
 
         composable(ScreenRoutes.HEALTH_NEWS) {
             HealthNewsScreen()
+        }
+
+        composable(ScreenRoutes.ANALYTICS) {
+            AnalyticsScreen(
+                onNavigateUp = { navController.navigateUp() },
+            )
         }
 
         composable(
