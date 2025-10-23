@@ -1,7 +1,9 @@
 package com.example.sgfuturenursingapp.ui.screens.analytics
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.sgfuturenursingapp.R
 import com.example.sgfuturenursingapp.ui.data.CareGroup
 import com.example.sgfuturenursingapp.ui.data.Task
 import com.example.sgfuturenursingapp.ui.data.User
@@ -16,7 +18,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -29,12 +30,12 @@ data class AnalyticsUiState(
     val lookbackDays: Int = DEFAULT_LOOKBACK_DAYS,
     val pieSegments: List<AnalyticsPieSegment> = emptyList(),
     val helperTaskCounts: List<HelperTaskCount> = emptyList(),
-    val helperCountLabel: String = "",
-    val errorMessage: String? = null,
+    val hasHelperData: Boolean = false,
+    val errorMessageRes: Int? = null,
 )
 
 data class AnalyticsPieSegment(
-    val label: String,
+    @StringRes val labelRes: Int,
     val value: Int,
 )
 
@@ -63,22 +64,25 @@ class AnalyticsViewModel
                 _uiState.update {
                     it.copy(
                         isLoading = true,
-                        errorMessage = null,
+                        errorMessageRes = null,
                         accessDenied = false,
                         lookbackDays = lookbackDays,
+                        hasHelperData = false,
+                        pieSegments = emptyList(),
+                        helperTaskCounts = emptyList(),
                     )
                 }
 
                 runCatching {
                     val currentUser =
                         authRepository.getCurrentUser()
-                            ?: error("会话已过期，请重新登录后再试。")
+                            ?: error("analytics.session_expired")
 
                     val usersCollection = firestore.collection(USERS_COLLECTION)
                     val userSnapshot = usersCollection.document(currentUser.uid).get().await()
                     val userRecord =
                         userSnapshot.toObject(User::class.java)
-                            ?: error("无法加载当前用户资料。")
+                            ?: error("analytics.user_profile_missing")
 
                     if (!userRecord.role.equals(ADMIN_ROLE, ignoreCase = true)) {
                         _uiState.update {
@@ -120,15 +124,15 @@ class AnalyticsViewModel
                             isLoading = false,
                             pieSegments = analyticsData.pieSegments,
                             helperTaskCounts = analyticsData.helperCounts,
-                            helperCountLabel = analyticsData.helperCountLabel,
-                            errorMessage = analyticsData.errorMessage,
+                            hasHelperData = analyticsData.hasHelperData,
+                            errorMessageRes = analyticsData.errorMessageRes,
                         )
                     }
                 }.onFailure { throwable ->
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = throwable.message ?: "无法加载分析数据，请稍后再试。",
+                            errorMessageRes = R.string.analytics_error_generic,
                         )
                     }
                 }
@@ -145,13 +149,13 @@ class AnalyticsViewModel
                 return AnalyticsComputationResult(
                     pieSegments =
                         listOf(
-                            AnalyticsPieSegment("已完成", 0),
-                            AnalyticsPieSegment("未完成", 0),
-                            AnalyticsPieSegment("待处理", 0),
+                            AnalyticsPieSegment(R.string.analytics_segment_completed, 0),
+                            AnalyticsPieSegment(R.string.analytics_segment_overdue, 0),
+                            AnalyticsPieSegment(R.string.analytics_segment_pending, 0),
                         ),
                     helperCounts = emptyList(),
-                    helperCountLabel = "暂无任务数据",
-                    errorMessage = null,
+                    hasHelperData = false,
+                    errorMessageRes = null,
                 )
             }
 
@@ -164,8 +168,8 @@ class AnalyticsViewModel
             helperMembers.keys.forEach { memberId ->
                 val snapshot = usersCollectionPath.document(memberId).get().await()
                 val memberUser = snapshot.toObject(User::class.java)
-                if (memberUser?.email != null && memberUser.email.isNotBlank()) {
-                    memberEmails[memberId] = memberUser.email
+                if (!memberUser?.email.isNullOrBlank()) {
+                    memberEmails[memberId] = memberUser!!.email!!
                 }
             }
 
@@ -216,57 +220,52 @@ class AnalyticsViewModel
 
             val pieSegments =
                 listOf(
-                    AnalyticsPieSegment("已完成", completedCount),
-                    AnalyticsPieSegment("未完成", overdueCount),
-                    AnalyticsPieSegment("待处理", pendingCount),
+                    AnalyticsPieSegment(R.string.analytics_segment_completed, completedCount),
+                    AnalyticsPieSegment(R.string.analytics_segment_overdue, overdueCount),
+                    AnalyticsPieSegment(R.string.analytics_segment_pending, pendingCount),
                 )
 
             val helperCounts =
                 helperCompletedTotals.entries.map { entry ->
-                    val email = memberEmails[entry.key] ?: "未分配成员"
+                    val displayName = memberEmails[entry.key] ?: entry.key
                     HelperTaskCount(
                         memberId = entry.key,
-                        displayName = email,
+                        displayName = displayName,
                         completedCount = entry.value,
                     )
                 }
 
-            val helperLabel =
-                if (helperCounts.isEmpty()) {
-                    "暂未收集到助手任务完成数据"
-                } else {
-                    "统计范围：最近${lookbackDays}天"
-                }
-
             val dataEmpty = (completedCount + overdueCount + pendingCount) == 0
+            val hasHelperData = helperCounts.isNotEmpty()
+            val errorMessageRes =
+                if (!anyTimestampAvailable) {
+                    R.string.analytics_error_missing_timestamp
+                } else {
+                    null
+                }
 
             return AnalyticsComputationResult(
                 pieSegments =
                     if (dataEmpty) {
                         listOf(
-                            AnalyticsPieSegment("已完成", 0),
-                            AnalyticsPieSegment("未完成", 0),
-                            AnalyticsPieSegment("待处理", 0),
+                            AnalyticsPieSegment(R.string.analytics_segment_completed, 0),
+                            AnalyticsPieSegment(R.string.analytics_segment_overdue, 0),
+                            AnalyticsPieSegment(R.string.analytics_segment_pending, 0),
                         )
                     } else {
                         pieSegments
                     },
                 helperCounts = helperCounts,
-                helperCountLabel = helperLabel,
-                errorMessage =
-                    if (!anyTimestampAvailable) {
-                        "任务缺少时间标签，显示为全部历史数据。"
-                    } else {
-                        null
-                    },
+                hasHelperData = hasHelperData,
+                errorMessageRes = errorMessageRes,
             )
         }
 
         private data class AnalyticsComputationResult(
             val pieSegments: List<AnalyticsPieSegment>,
             val helperCounts: List<HelperTaskCount>,
-            val helperCountLabel: String,
-            val errorMessage: String?,
+            val hasHelperData: Boolean,
+            val errorMessageRes: Int?,
         )
 
         private companion object {

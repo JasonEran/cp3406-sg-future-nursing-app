@@ -10,6 +10,7 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.ui.Modifier
 import com.example.sgfuturenursingapp.ui.navigation.AppNavigation
+import com.example.sgfuturenursingapp.ui.localization.LanguageController
 import com.example.sgfuturenursingapp.ui.theme.CP3406SGFutureNursingAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -18,6 +19,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        LanguageController.initialize()
         setContent {
             val windowSizeClass = calculateWindowSizeClass(activity = this)
             CP3406SGFutureNursingAppTheme {

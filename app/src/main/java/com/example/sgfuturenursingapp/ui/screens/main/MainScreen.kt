@@ -42,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.sgfuturenursingapp.R
 import com.example.sgfuturenursingapp.network.model.NewsArticle
 import com.example.sgfuturenursingapp.network.model.NewsSource
 import com.example.sgfuturenursingapp.ui.data.Task
@@ -127,7 +129,7 @@ fun MainScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Home",
+                        text = stringResource(id = R.string.main_home_title),
                         style = MaterialTheme.typography.headlineSmall,
                     )
                 },
@@ -139,7 +141,7 @@ fun MainScreen(
                     IconButton(onClick = onProfileClick) {
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
-                            contentDescription = "Profile",
+                            contentDescription = stringResource(id = R.string.main_profile_cd),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
@@ -210,12 +212,12 @@ private fun TodayOverviewCard(
             ) {
                 Column {
                     Text(
-                        text = "今日概览",
+                        text = stringResource(id = R.string.main_overview_card_title),
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                     Text(
-                        text = "掌握今天的护理任务进度",
+                        text = stringResource(id = R.string.main_overview_card_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
                     )
@@ -227,7 +229,7 @@ private fun TodayOverviewCard(
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                         ),
                 ) {
-                    Text("查看日程")
+                    Text(stringResource(id = R.string.main_overview_view_schedule))
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
@@ -257,15 +259,15 @@ private fun TodayOverviewCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     OverviewMetric(
-                        label = "总任务",
+                        label = stringResource(id = R.string.main_overview_total),
                         value = uiState.totalTasks,
                     )
                     OverviewMetric(
-                        label = "已完成",
+                        label = stringResource(id = R.string.main_overview_completed),
                         value = uiState.completedTasks,
                     )
                     OverviewMetric(
-                        label = "未完成",
+                        label = stringResource(id = R.string.main_overview_pending),
                         value = uiState.pendingTasks,
                         highlight = true,
                     )
@@ -331,11 +333,11 @@ private fun UrgentTasksSection(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "紧急任务",
+                text = stringResource(id = R.string.main_urgent_title),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
             )
             TextButton(onClick = onViewAllTasks) {
-                Text("查看全部")
+                Text(stringResource(id = R.string.main_urgent_view_all))
             }
         }
 
@@ -362,16 +364,16 @@ private fun UrgentTasksSection(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Text(
-                            text = "今天没有紧急任务",
+                            text = stringResource(id = R.string.main_urgent_empty_title),
                             style = MaterialTheme.typography.titleMedium,
                         )
                         Text(
-                            text = "保持良好的节奏！如果需要，可以查看完整任务列表了解更多安排。",
+                            text = stringResource(id = R.string.main_urgent_empty_description),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         TextButton(onClick = onViewAllTasks) {
-                            Text("前往任务列表")
+                            Text(stringResource(id = R.string.main_urgent_empty_cta))
                         }
                     }
                 }
@@ -450,7 +452,7 @@ private fun UrgentTaskCard(
                     )
                 }
                 Text(
-                    text = task.time.ifBlank { "未设置时间" },
+                    text = task.time.ifBlank { stringResource(id = R.string.main_urgent_time_unset) },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -477,15 +479,15 @@ private fun LatestNewsSection(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "最新资讯",
+                text = stringResource(id = R.string.main_news_title),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(onClick = onNewsClick) {
-                    Text("更多")
+                    Text(stringResource(id = R.string.main_news_more))
                 }
                 TextButton(onClick = onResourcesClick) {
-                    Text("资源中心")
+                    Text(stringResource(id = R.string.main_news_resources))
                 }
             }
         }
@@ -504,11 +506,11 @@ private fun LatestNewsSection(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        text = "暂无最新资讯",
+                        text = stringResource(id = R.string.main_news_empty),
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
-                        text = "敬请期待更多健康护理相关新闻。",
+                        text = stringResource(id = R.string.main_news_empty_description),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -556,7 +558,7 @@ private fun NewsPreviewCard(
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Text(
-                text = article.title.orEmpty().ifBlank { "未命名资讯" },
+                text = article.title.orEmpty().ifBlank { stringResource(id = R.string.main_news_title_fallback) },
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,

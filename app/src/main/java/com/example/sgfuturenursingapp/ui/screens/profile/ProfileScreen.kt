@@ -1,7 +1,6 @@
-@file:Suppress("ktlint:standard:function-naming")
-
 package com.example.sgfuturenursingapp.ui.screens.profile
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,9 +16,10 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -38,6 +38,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,6 +47,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.sgfuturenursingapp.R
+import com.example.sgfuturenursingapp.ui.localization.AppLanguage
 import com.example.sgfuturenursingapp.ui.theme.CP3406SGFutureNursingAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,27 +69,28 @@ fun ProfileScreen(
         }
     }
 
-    LaunchedEffect(uiState.logoutError) {
-        uiState.logoutError?.let { message ->
-            snackbarHostState.showSnackbar(message)
-        }
-    }
+    val context = LocalContext.current
+    val errorMessage = uiState.errorMessage
+    val errorMessageRes = uiState.errorMessageRes
 
-    LaunchedEffect(uiState.errorMessage) {
-        uiState.errorMessage
-            ?.takeIf { !uiState.isLoading }
-            ?.let { message -> snackbarHostState.showSnackbar(message) }
+    LaunchedEffect(errorMessage, errorMessageRes) {
+        when {
+            errorMessageRes != null ->
+                snackbarHostState.showSnackbar(context.getString(errorMessageRes))
+            !errorMessage.isNullOrBlank() ->
+                snackbarHostState.showSnackbar(errorMessage)
+        }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("\u4e2a\u4eba\u8d44\u6599") },
+                title = { Text(stringResource(id = R.string.profile_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "\u8fd4\u56de",
+                            contentDescription = stringResource(id = R.string.profile_title),
                         )
                     }
                 },
@@ -104,6 +109,7 @@ fun ProfileScreen(
             onManageTeam = onManageTeam,
             onRefresh = viewModel::refreshProfile,
             onToggleNotification = viewModel::setNotificationsEnabled,
+            onLanguageSelected = viewModel::onLanguageSelected,
             onLogout = viewModel::logout,
         )
     }
@@ -117,6 +123,7 @@ private fun ProfileScreenContent(
     onManageTeam: () -> Unit,
     onRefresh: () -> Unit,
     onToggleNotification: (Boolean) -> Unit,
+    onLanguageSelected: (AppLanguage) -> Unit,
     onLogout: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
@@ -138,6 +145,12 @@ private fun ProfileScreenContent(
         }
 
         ProfileHeaderCard(uiState = uiState)
+
+        LanguageSection(
+            selectedLanguage = uiState.selectedLanguage,
+            isUpdating = uiState.isUpdatingLanguage,
+            onLanguageSelected = onLanguageSelected,
+        )
 
         CareGroupCard(
             uiState = uiState,
@@ -168,22 +181,92 @@ private fun ProfileHeaderCard(uiState: ProfileUiState) {
         ) {
             Icon(
                 imageVector = Icons.Filled.AccountCircle,
-                contentDescription = "\u5934\u50cf",
+                contentDescription = stringResource(id = R.string.profile_title),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier =
                     Modifier
-                        .size(64.dp)
-                        .padding(end = 20.dp),
+                        .padding(end = 20.dp)
+                        .size(56.dp),
             )
-
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
                 Text(
-                    text = uiState.email.ifBlank { "\u672a\u77e5\u90ae\u7bb1" },
+                    text =
+                        uiState.email.ifBlank {
+                            stringResource(id = R.string.profile_email_unknown)
+                        },
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 )
                 Text(
-                    text = "\u89d2\u8272\uff1a${uiState.role.ifBlank { "\u672a\u5b9a\u4e49" }}",
+                    text =
+                        uiState.role.ifBlank {
+                            stringResource(id = R.string.profile_role_unknown)
+                        },
                     style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LanguageSection(
+    selectedLanguage: AppLanguage,
+    isUpdating: Boolean,
+    onLanguageSelected: (AppLanguage) -> Unit,
+) {
+    val options = remember { AppLanguage.values() }
+
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = stringResource(id = R.string.profile_language_label),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                )
+                Text(
+                    text = stringResource(id = R.string.profile_language_description),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text(
+                text =
+                    stringResource(
+                        id = R.string.profile_language_current,
+                        stringResource(id = selectedLanguage.displayNameRes),
+                    ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                options.forEach { option ->
+                    FilterChip(
+                        selected = option == selectedLanguage,
+                        onClick = { onLanguageSelected(option) },
+                        label = { Text(text = stringResource(id = option.displayNameRes)) },
+                    )
+                }
+            }
+
+            if (isUpdating) {
+                Text(
+                    text = stringResource(id = R.string.profile_language_updating),
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -210,32 +293,39 @@ private fun CareGroupCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "\u62a4\u7406\u7ec4\u4fe1\u606f",
+                    text = stringResource(id = R.string.profile_care_group_section),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 )
                 if (uiState.canManageTeam) {
                     TextButton(onClick = onManageTeam) {
-                        Text("\u7ba1\u7406\u56e2\u961f")
+                        Text(text = stringResource(id = R.string.profile_manage_team))
                     }
                 }
             }
 
+            val careGroupName =
+                if (uiState.careGroupName.isBlank()) {
+                    stringResource(id = R.string.profile_care_group_not_assigned)
+                } else {
+                    stringResource(id = R.string.profile_care_group_label, uiState.careGroupName)
+                }
+
             Text(
-                text = "\u62a4\u7406\u7ec4\uff1a${uiState.careGroupName.ifBlank { "\u672a\u52a0\u5165\u62a4\u7406\u7ec4" }}",
+                text = careGroupName,
                 style = MaterialTheme.typography.bodyLarge,
             )
 
             HorizontalDivider()
 
             Text(
-                text = "\u6210\u5458\u5217\u8868",
+                text = stringResource(id = R.string.profile_members_label),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
             )
 
             if (uiState.members.isEmpty()) {
                 Text(
-                    text = "\u6682\u65e0\u6210\u5458\u4fe1\u606f\u3002",
+                    text = stringResource(id = R.string.profile_members_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -244,13 +334,22 @@ private fun CareGroupCard(
                     uiState.members.forEach { member ->
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(
-                                text = member.email,
+                                text =
+                                    member.email.ifBlank {
+                                        stringResource(
+                                            id = R.string.profile_care_group_unknown_member,
+                                            member.uid,
+                                        )
+                                    },
                                 style = MaterialTheme.typography.bodyLarge,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
                             Text(
-                                text = "\u89d2\u8272\uff1a${member.role.ifBlank { "\u672a\u5b9a\u4e49" }}",
+                                text =
+                                    member.role.ifBlank {
+                                        stringResource(id = R.string.profile_role_unknown)
+                                    },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -259,16 +358,8 @@ private fun CareGroupCard(
                 }
             }
 
-            uiState.errorMessage?.let { message ->
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-
             TextButton(onClick = onRefresh) {
-                Text("\u5237\u65b0\u4fe1\u606f")
+                Text(text = stringResource(id = R.string.profile_refresh))
             }
         }
     }
@@ -287,7 +378,7 @@ private fun SettingsCard(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
-                text = "\u8bbe\u7f6e",
+                text = stringResource(id = R.string.profile_settings_title),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
             )
 
@@ -298,11 +389,11 @@ private fun SettingsCard(
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        text = "\u901a\u77e5\u8bbe\u7f6e",
+                        text = stringResource(id = R.string.profile_notifications_title),
                         style = MaterialTheme.typography.bodyLarge,
                     )
                     Text(
-                        text = "\u5f00\u542f\u540e\u5c06\u53ca\u65f6\u6536\u5230\u62a4\u7406\u4efb\u52a1\u63d0\u9192\u3002",
+                        text = stringResource(id = R.string.profile_notifications_description),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -342,11 +433,11 @@ private fun LogoutSection(
                     strokeWidth = 2.dp,
                 )
             } else {
-                Text("\u9000\u51fa\u767b\u5f55")
+                Text(text = stringResource(id = R.string.profile_logout_button))
             }
         }
         Text(
-            text = "\u9000\u51fa\u540e\u5c06\u8fd4\u56de\u767b\u5f55\u9875\u9762\uff0c\u53ef\u91cd\u65b0\u5207\u6362\u5e10\u6237\u3002",
+            text = stringResource(id = R.string.profile_logout_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -363,7 +454,7 @@ private fun ProfileScreenContentPreview() {
                     isLoading = false,
                     email = "admin@example.com",
                     role = "Admin",
-                    careGroupName = "\u5171\u62a4\u56e2\u961f A",
+                    careGroupName = "Care Group A",
                     members =
                         listOf(
                             CareGroupMemberUi(uid = "1", email = "admin@example.com", role = "Admin"),
@@ -371,12 +462,14 @@ private fun ProfileScreenContentPreview() {
                         ),
                     canManageTeam = true,
                     notificationEnabled = true,
+                    selectedLanguage = AppLanguage.ENGLISH,
                 ),
             paddingTop = 0.dp,
             paddingBottom = 0.dp,
             onManageTeam = {},
             onRefresh = {},
             onToggleNotification = {},
+            onLanguageSelected = {},
             onLogout = {},
         )
     }

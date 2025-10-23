@@ -23,6 +23,26 @@ object LanguageController {
     private val _languageFlow = kotlinx.coroutines.flow.MutableStateFlow(AppLanguage.ENGLISH)
     val languageFlow: kotlinx.coroutines.flow.StateFlow<AppLanguage> = _languageFlow
 
+    fun initialize() {
+        val storedLocales = AppCompatDelegate.getApplicationLocales()
+        val storedTag =
+            if (!storedLocales.isEmpty) {
+                storedLocales[0]?.toLanguageTag()
+            } else {
+                null
+            }
+        val resolvedLanguage =
+            AppLanguage
+                .values()
+                .firstOrNull { language ->
+                    language.localeTag.equals(storedTag, ignoreCase = true) ||
+                        language.code.equals(storedTag, ignoreCase = true)
+                } ?: _languageFlow.value
+        _languageFlow.value = resolvedLanguage
+        val locales = LocaleListCompat.forLanguageTags(resolvedLanguage.localeTag)
+        AppCompatDelegate.setApplicationLocales(locales)
+    }
+
     fun updateLanguage(language: AppLanguage) {
         if (_languageFlow.value == language) return
         _languageFlow.value = language

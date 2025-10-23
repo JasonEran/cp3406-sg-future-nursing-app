@@ -31,7 +31,7 @@ data class AuthUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val errorMessageRes: Int? = null,
-    val selectedLanguage: AppLanguage = AppLanguage.ENGLISH,
+    val selectedLanguage: AppLanguage = LanguageController.languageFlow.value,
 ) {
     val isAuthenticated: Boolean get() = userEmail != null
     val isFormValid: Boolean get() = email.isNotBlank() && password.length >= 6
@@ -77,7 +77,14 @@ class AuthViewModel
         }
 
         fun onLanguageSelected(language: AppLanguage) {
-            _uiState.update { it.copy(selectedLanguage = language) }
+            _uiState.update {
+                it.copy(
+                    selectedLanguage = language,
+                    errorMessage = null,
+                    errorMessageRes = null,
+                )
+            }
+            LanguageController.updateLanguage(language)
         }
 
         fun login() {
@@ -162,15 +169,15 @@ class AuthViewModel
                     onSuccess = { user ->
                         _uiState.update {
                             it.copy(
-                        userEmail = user?.email ?: it.userEmail,
-                        isLoading = false,
-                        errorMessage = null,
-                        errorMessageRes = null,
-                        password = "",
-                    )
-                }
-                LanguageController.updateLanguage(language)
-                applyLanguageFromProfile()
+                                userEmail = user?.email ?: it.userEmail,
+                                isLoading = false,
+                                errorMessage = null,
+                                errorMessageRes = null,
+                                password = "",
+                            )
+                        }
+                        LanguageController.updateLanguage(language)
+                        applyLanguageFromProfile()
                     },
                     onFailure = { throwable ->
                         if (throwable !is CancellationException) {
@@ -272,7 +279,14 @@ class AuthViewModel
                 val profile = getCurrentUserProfileUseCase()
                 val language = AppLanguage.fromCode(profile?.language)
                 LanguageController.updateLanguage(language)
-                _uiState.update { it.copy(selectedLanguage = language) }
+                _uiState.update {
+                    it.copy(
+                        selectedLanguage = language,
+                        errorMessage = null,
+                        errorMessageRes = null,
+                    )
+                }
             }
         }
     }
+

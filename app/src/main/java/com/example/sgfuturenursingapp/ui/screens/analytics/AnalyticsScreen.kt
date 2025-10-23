@@ -2,6 +2,7 @@
 
 package com.example.sgfuturenursingapp.ui.screens.analytics
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,6 +45,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.sgfuturenursingapp.R
 import com.example.sgfuturenursingapp.ui.theme.CP3406SGFutureNursingAppTheme
 import kotlin.math.min
 
@@ -57,12 +60,12 @@ fun AnalyticsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("任务分析") },
+                title = { Text(stringResource(id = R.string.analytics_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回",
+                            contentDescription = stringResource(id = R.string.common_back),
                         )
                     }
                 },
@@ -95,7 +98,7 @@ fun AnalyticsScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "仅管理员可访问此页面。",
+                        text = stringResource(id = R.string.analytics_access_denied),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.error,
                     )
@@ -129,12 +132,12 @@ private fun AnalyticsContent(
     ) {
         item {
             Text(
-                text = "最近${uiState.lookbackDays}天护理任务概况",
+                text = stringResource(id = R.string.analytics_overview_heading, uiState.lookbackDays),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
             )
-            uiState.errorMessage?.let { message ->
+            uiState.errorMessageRes?.let { messageRes ->
                 Text(
-                    text = message,
+                    text = stringResource(id = messageRes),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp),
@@ -144,8 +147,8 @@ private fun AnalyticsContent(
 
         item {
             AnalyticsCard(
-                title = "任务完成情况",
-                subtitle = "已完成 / 未完成 / 待处理",
+                title = stringResource(id = R.string.analytics_pie_title),
+                subtitle = stringResource(id = R.string.analytics_pie_subtitle),
             ) {
                 TaskStatusPieChart(
                     data = uiState.pieSegments,
@@ -159,8 +162,13 @@ private fun AnalyticsContent(
 
         item {
             AnalyticsCard(
-                title = "助手任务完成统计",
-                subtitle = uiState.helperCountLabel.ifBlank { "统计结果" },
+                title = stringResource(id = R.string.analytics_bar_title),
+                subtitle =
+                    if (uiState.hasHelperData) {
+                        stringResource(id = R.string.analytics_helper_label, uiState.lookbackDays)
+                    } else {
+                        stringResource(id = R.string.analytics_helper_none)
+                    },
             ) {
                 HelperBarChart(
                     data = uiState.helperTaskCounts,
@@ -227,7 +235,7 @@ private fun TaskStatusPieChart(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = "暂无任务数据",
+                text = stringResource(id = R.string.analytics_pie_empty),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -275,7 +283,7 @@ private fun TaskStatusPieChart(
             data.forEachIndexed { index, segment ->
                 LegendRow(
                     indicatorColor = colors[index % colors.size],
-                    label = segment.label,
+                    labelRes = segment.labelRes,
                     value = segment.value,
                 )
             }
@@ -294,7 +302,7 @@ private fun HelperBarChart(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = "暂无助手完成数据",
+                text = stringResource(id = R.string.analytics_bar_empty),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -351,7 +359,10 @@ private fun HelperBarChart(
                         maxLines = 2,
                     )
                     Text(
-                        text = "${helper.completedCount} 次完成",
+                        text = stringResource(
+                            id = R.string.analytics_helper_completed_total,
+                            helper.completedCount,
+                        ),
                         style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurface,
                     )
@@ -364,7 +375,7 @@ private fun HelperBarChart(
 @Composable
 private fun LegendRow(
     indicatorColor: Color,
-    label: String,
+    @StringRes labelRes: Int,
     value: Int,
 ) {
     Row(
@@ -386,10 +397,7 @@ private fun LegendRow(
                     drawCircle(color = indicatorColor)
                 }
             }
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyMedium,
-            )
+            Text(text = stringResource(id = labelRes), style = MaterialTheme.typography.bodyMedium)
         }
         Text(
             text = value.toString(),
@@ -409,16 +417,16 @@ private fun AnalyticsScreenPreview() {
                     isLoading = false,
                     pieSegments =
                         listOf(
-                            AnalyticsPieSegment("已完成", 12),
-                            AnalyticsPieSegment("未完成", 5),
-                            AnalyticsPieSegment("待处理", 3),
+                            AnalyticsPieSegment(R.string.analytics_segment_completed, 12),
+                            AnalyticsPieSegment(R.string.analytics_segment_overdue, 5),
+                            AnalyticsPieSegment(R.string.analytics_segment_pending, 3),
                         ),
                     helperTaskCounts =
                         listOf(
                             HelperTaskCount("1", "helper1@example.com", 8),
                             HelperTaskCount("2", "helper2@example.com", 4),
                         ),
-                    helperCountLabel = "统计范围：最近7天",
+                    hasHelperData = true,
                     lookbackDays = 7,
                 ),
         )
