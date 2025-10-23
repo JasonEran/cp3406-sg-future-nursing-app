@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sgfuturenursingapp.ui.data.ResourceArticle
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,12 +73,20 @@ class ArticleDetailViewModel
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = throwable.message ?: "无法加载文章详情，请稍后再试。",
+                            errorMessage = mapDetailError(throwable),
                         )
                     }
                 }
             }
         }
+
+        private fun mapDetailError(throwable: Throwable): String =
+            when {
+                throwable is FirebaseFirestoreException &&
+                    throwable.code == FirebaseFirestoreException.Code.PERMISSION_DENIED ->
+                    "无法读取该文章，请检查 Firestore 安全规则是否允许访问 resources 集合。"
+                else -> throwable.message ?: "无法加载文章详情，请稍后再试。"
+            }
 
         companion object {
             const val ARTICLE_ID_KEY = "resourceId"

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sgfuturenursingapp.ui.data.ResourceArticle
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ktx.snapshots
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -69,11 +70,10 @@ class ResourcesViewModel
                         .snapshots()
                         .map { snapshot ->
                             snapshot.documents.mapNotNull { doc ->
-                                doc.toObject(ResourceArticle::class.java)
-                                    ?.copy(id = doc.id)
+                                doc.toObject(ResourceArticle::class.java)?.copy(id = doc.id)
                             }
                         }.catch { throwable ->
-                            _uiState.updateError(throwable.message ?: "无法加载资源，请稍后再试。")
+                            _uiState.updateError(mapResourcesError(throwable))
                         }.collect { articles ->
                             _uiState.updateArticles(articles)
                         }
@@ -100,6 +100,14 @@ class ResourcesViewModel
         private fun MutableStateFlow<ResourcesUiState>.updateError(message: String) {
             value = value.copy(isLoading = false, errorMessage = message, articles = emptyList())
         }
+
+        private fun mapResourcesError(throwable: Throwable): String =
+            when {
+                throwable is FirebaseFirestoreException &&
+                    throwable.code == FirebaseFirestoreException.Code.PERMISSION_DENIED ->
+                    "无法访问资源中心，请确认数据库安全规则允许当前用户读取 resources 集合。"
+                else -> throwable.message ?: "无法加载资源，请稍后再试。"
+            }
 
         companion object {
             private const val RESOURCES_COLLECTION = "resources"

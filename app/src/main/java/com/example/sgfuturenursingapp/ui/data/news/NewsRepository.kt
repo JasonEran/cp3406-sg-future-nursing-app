@@ -28,9 +28,8 @@ class NewsRepository
         suspend fun refreshHealthNews(
             country: String = "us",
             pageSize: Int = 20,
-            apiKey: String = BuildConfig.NEWS_API_KEY,
         ): Result<Unit> {
-            if (apiKey.isBlank()) {
+            if (BuildConfig.NEWS_API_KEY.isBlank()) {
                 return Result.success(Unit)
             }
 
@@ -40,7 +39,6 @@ class NewsRepository
                         newsApiService.getTopHealthHeadlines(
                             country = country,
                             pageSize = pageSize,
-                            apiKey = apiKey,
                         )
 
                     if (!response.status.equals("ok", ignoreCase = true)) {
@@ -110,7 +108,7 @@ class NewsRepository
         }
 
         private fun normalizeErrorMessage(throwable: Throwable): String {
-            if (throwable is HttpException && throwable.code() == 401) {
+            if (throwable is HttpException && throwable.code() in setOf(401, 403)) {
                 return GENERIC_NEWS_ERROR_MESSAGE
             }
             val message = throwable.message.orEmpty()

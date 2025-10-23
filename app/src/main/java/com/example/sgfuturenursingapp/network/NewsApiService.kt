@@ -10,7 +10,6 @@ interface NewsApiService {
         @Query("country") country: String = "us",
         @Query("category") category: String = "health",
         @Query("pageSize") pageSize: Int = 20,
-        @Query("apiKey") apiKey: String,
     ): NewsResponse
 }
 

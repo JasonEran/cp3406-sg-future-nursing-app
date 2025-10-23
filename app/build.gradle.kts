@@ -89,6 +89,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.gson)
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     kapt(libs.hilt.compiler)
     kapt(libs.androidx.room.compiler)
     testImplementation(libs.junit)
