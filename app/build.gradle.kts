@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.ktlint.gradle)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
+    id("org.owasp.dependencycheck") version "10.0.3"
 }
 
 val newsApiBaseUrl = "https://newsapi.org/v2/"
@@ -102,6 +103,10 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+dependencyCheck {
+    failOnCVSS = 7.0F
 }
 
 ktlint {
