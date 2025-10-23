@@ -34,6 +34,8 @@ import com.example.sgfuturenursingapp.ui.screens.dashboard.DashboardViewModel
 import com.example.sgfuturenursingapp.ui.screens.main.MainScreen
 import com.example.sgfuturenursingapp.ui.screens.news.HealthNewsScreen
 import com.example.sgfuturenursingapp.ui.screens.profile.ProfileScreen
+import com.example.sgfuturenursingapp.ui.screens.resources.ArticleDetailScreen
+import com.example.sgfuturenursingapp.ui.screens.resources.ResourcesScreen
 import com.example.sgfuturenursingapp.ui.screens.task.AddEditTaskScreen
 import com.example.sgfuturenursingapp.ui.screens.task.TaskDetailScreen
 import com.example.sgfuturenursingapp.ui.screens.auth.AuthViewModel
@@ -50,6 +52,9 @@ object ScreenRoutes {
     const val HELPER_MANAGEMENT = "helper_management"
     const val HEALTH_NEWS = "health_news"
     const val ANALYTICS = "analytics"
+    const val RESOURCES = "resources"
+    const val ARTICLE_DETAIL = "resource_article_detail"
+    const val RESOURCE_ID = "resourceId"
     const val TASK_DETAIL = "task_detail"
     const val PROFILE = "profile"
     const val ADD_EDIT_TASK = "add_edit_task"
@@ -274,6 +279,33 @@ fun AppNavigation(windowSizeClass: WindowSizeClass) {
 
         composable(ScreenRoutes.ANALYTICS) {
             AnalyticsScreen(
+                onNavigateUp = { navController.navigateUp() },
+            )
+        }
+
+        composable(ScreenRoutes.RESOURCES) {
+            ResourcesScreen(
+                onNavigateUp = { navController.navigateUp() },
+                onArticleClick = { article ->
+                    if (article.id.isNotBlank()) {
+                        navController.navigate("${ScreenRoutes.ARTICLE_DETAIL}/${article.id}") {
+                            launchSingleTop = true
+                        }
+                    }
+                },
+            )
+        }
+
+        composable(
+            route = "${ScreenRoutes.ARTICLE_DETAIL}/{${ScreenRoutes.RESOURCE_ID}}",
+            arguments =
+                listOf(
+                    navArgument(ScreenRoutes.RESOURCE_ID) {
+                        type = NavType.StringType
+                    },
+                ),
+        ) {
+            ArticleDetailScreen(
                 onNavigateUp = { navController.navigateUp() },
             )
         }

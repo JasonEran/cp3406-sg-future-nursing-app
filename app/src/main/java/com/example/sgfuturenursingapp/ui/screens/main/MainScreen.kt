@@ -86,6 +86,11 @@ fun MainScreen(
                 launchSingleTop = true
             }
         },
+        onResourcesClick = {
+            navController.navigate(ScreenRoutes.RESOURCES) {
+                launchSingleTop = true
+            }
+        },
         onProfileClick = {
             navController.navigate(ScreenRoutes.PROFILE) {
                 launchSingleTop = true
@@ -103,6 +108,7 @@ fun MainScreen(
     onTaskClick: (Int) -> Unit,
     onViewAllTasks: () -> Unit,
     onNewsClick: () -> Unit,
+    onResourcesClick: () -> Unit,
     onProfileClick: () -> Unit,
 ) {
     val horizontalPadding =
@@ -172,6 +178,7 @@ fun MainScreen(
                     LatestNewsSection(
                         newsUiState = newsUiState,
                         onNewsClick = onNewsClick,
+                        onResourcesClick = onResourcesClick,
                     )
                 }
             }
@@ -456,6 +463,7 @@ private fun UrgentTaskCard(
 private fun LatestNewsSection(
     newsUiState: NewsUiState,
     onNewsClick: () -> Unit,
+    onResourcesClick: () -> Unit,
 ) {
     val articles = newsUiState.articles.take(NEWS_ITEM_LIMIT)
 
@@ -472,8 +480,13 @@ private fun LatestNewsSection(
                 text = "最新资讯",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
             )
-            TextButton(onClick = onNewsClick) {
-                Text("更多")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = onNewsClick) {
+                    Text("更多")
+                }
+                TextButton(onClick = onResourcesClick) {
+                    Text("资源中心")
+                }
             }
         }
 
@@ -584,6 +597,7 @@ private fun MainScreenPreview() {
             onTaskClick = {},
             onViewAllTasks = {},
             onNewsClick = {},
+            onResourcesClick = {},
             onProfileClick = {},
         )
     }
@@ -612,6 +626,7 @@ private fun MainScreenExpandedPreview() {
             onTaskClick = {},
             onViewAllTasks = {},
             onNewsClick = {},
+            onResourcesClick = {},
             onProfileClick = {},
         )
     }
