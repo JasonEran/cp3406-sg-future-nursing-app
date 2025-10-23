@@ -133,6 +133,170 @@ class HelperManagementViewModelTest {
     }
 
     @Test
+    fun `searchHelperByEmail with empty query shows validation error`() = runTest {
+        val viewModel = HelperManagementViewModel(firestore, authRepository)
+        advanceUntilIdle()
+
+        viewModel.onSearchQueryChange("   ")
+        viewModel.searchHelperByEmail()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals("Please enter an email address to search.", state.errorMessage)
+        assertNull(state.foundUser)
+        assertNull(state.successMessage)
+        assertFalse(state.isMemberOfGroup)
+    }
+
+    @Test
+    fun `searchHelperByEmail shows error when helper not found`() = runTest {
+        val helperQuerySnapshot = mockk<QuerySnapshot>()
+        val helperQuery = mockk<Query>()
+
+        every { helperQuerySnapshot.documents } returns emptyList()
+        every { usersCollection.whereEqualTo("email", HELPER_EMAIL) } returns helperQuery
+        every { helperQuery.limit(1) } returns helperQuery
+        every { helperQuery.get() } returns Tasks.forResult(helperQuerySnapshot)
+
+        val viewModel = HelperManagementViewModel(firestore, authRepository)
+        advanceUntilIdle()
+
+        viewModel.onSearchQueryChange(HELPER_EMAIL)
+        viewModel.searchHelperByEmail()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertNull(state.foundUser)
+        assertEquals("No helper found for $HELPER_EMAIL.", state.errorMessage)
+        assertNull(state.successMessage)
+        assertFalse(state.isMemberOfGroup)
+    }
+
+    @Test
+    fun `searchHelperByEmail prevents admin from adding themselves`() = runTest {
+        val helperSnapshot = mockk<DocumentSnapshot>()
+        val helperQuerySnapshot = mockk<QuerySnapshot>()
+        val helperQuery = mockk<Query>()
+        val helperUser =
+            User(
+                uid = ADMIN_UID,
+                email = ADMIN_EMAIL,
+                role = "Admin",
+                careGroupId = ADMIN_GROUP_ID,
+            )
+
+        every { helperSnapshot.toObject(User::class.java) } returns helperUser
+        every { helperQuerySnapshot.documents } returns listOf(helperSnapshot)
+        every { usersCollection.whereEqualTo("email", ADMIN_EMAIL) } returns helperQuery
+        every { helperQuery.limit(1) } returns helperQuery
+        every { helperQuery.get() } returns Tasks.forResult(helperQuerySnapshot)
+
+        val viewModel = HelperManagementViewModel(firestore, authRepository)
+        advanceUntilIdle()
+
+        viewModel.onSearchQueryChange(ADMIN_EMAIL)
+        viewModel.searchHelperByEmail()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertNull(state.foundUser)
+        assertEquals("You cannot add yourself to the care group.", state.errorMessage)
+        assertNull(state.successMessage)
+        assertFalse(state.isMemberOfGroup)
+    }
+
+    @Test
+    fun `addHelperToCareGroup requires helper selection`() = runTest {
+        val viewModel = HelperManagementViewModel(firestore, authRepository)
+        advanceUntilIdle()
+
+        viewModel.addHelperToCareGroup()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals("Please search and select a helper first.", state.errorMessage)
+        assertNull(state.successMessage)
+        assertFalse(state.isUpdating)
+    }
+
+    @Test
+    fun `addHelperToCareGroup reports firestore failure`() = runTest {
+        val helperSnapshot = mockk<DocumentSnapshot>()
+        val helperQuerySnapshot = mockk<QuerySnapshot>()
+        val helperQuery = mockk<Query>()
+        val helperUser =
+            User(
+                uid = HELPER_UID,
+                email = HELPER_EMAIL,
+                role = "Helper",
+                careGroupId = null,
+            )
+        val helperDocument = mockk<DocumentReference>()
+        val careGroupDocument = mockk<DocumentReference>()
+
+        every { helperSnapshot.toObject(User::class.java) } returns helperUser
+        every { helperQuerySnapshot.documents } returns listOf(helperSnapshot)
+        every { usersCollection.whereEqualTo("email", HELPER_EMAIL) } returns helperQuery
+        every { helperQuery.limit(1) } returns helperQuery
+        every { helperQuery.get() } returns Tasks.forResult(helperQuerySnapshot)
+        every { usersCollection.document(HELPER_UID) } returns helperDocument
+        every { careGroupsCollection.document(ADMIN_GROUP_ID) } returns careGroupDocument
+        every { firestore.runBatch(any()) } returns Tasks.forException(RuntimeException("Batch failed"))
+
+        val viewModel = HelperManagementViewModel(firestore, authRepository)
+        advanceUntilIdle()
+
+        viewModel.onSearchQueryChange(HELPER_EMAIL)
+        viewModel.searchHelperByEmail()
+        advanceUntilIdle()
+
+        viewModel.addHelperToCareGroup()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals("Batch failed", state.errorMessage)
+        assertNull(state.successMessage)
+        assertFalse(state.isUpdating)
+        assertFalse(state.isMemberOfGroup)
+    }
+
+    @Test
+    fun `clearMessages removes prior notifications`() = runTest {
+        val helperSnapshot = mockk<DocumentSnapshot>()
+        val helperQuerySnapshot = mockk<QuerySnapshot>()
+        val helperQuery = mockk<Query>()
+        val helperUser =
+            User(
+                uid = HELPER_UID,
+                email = HELPER_EMAIL,
+                role = "Helper",
+                careGroupId = ADMIN_GROUP_ID,
+            )
+
+        every { helperSnapshot.toObject(User::class.java) } returns helperUser
+        every { helperQuerySnapshot.documents } returns listOf(helperSnapshot)
+        every { usersCollection.whereEqualTo("email", HELPER_EMAIL) } returns helperQuery
+        every { helperQuery.limit(1) } returns helperQuery
+        every { helperQuery.get() } returns Tasks.forResult(helperQuerySnapshot)
+
+        val viewModel = HelperManagementViewModel(firestore, authRepository)
+        advanceUntilIdle()
+
+        viewModel.onSearchQueryChange(HELPER_EMAIL)
+        viewModel.searchHelperByEmail()
+        advanceUntilIdle()
+
+        val withMessage = viewModel.uiState.value
+        assertEquals("${helperUser.email} is already in this care group.", withMessage.successMessage)
+
+        viewModel.clearMessages()
+
+        val clearedState = viewModel.uiState.value
+        assertNull(clearedState.successMessage)
+        assertNull(clearedState.errorMessage)
+    }
+
+    @Test
     fun `addHelperToCareGroup updates firestore and state`() = runTest {
         val helperSnapshot = mockk<DocumentSnapshot>()
         val helperQuerySnapshot = mockk<QuerySnapshot>()
