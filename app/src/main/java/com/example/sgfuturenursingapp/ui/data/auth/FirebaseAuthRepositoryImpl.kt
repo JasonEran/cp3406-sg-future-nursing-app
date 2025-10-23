@@ -25,13 +25,17 @@ class FirebaseAuthRepositoryImpl
         private val firebaseAuth: FirebaseAuth,
         private val firestore: FirebaseFirestore,
     ) : AuthRepository {
-        override suspend fun register(email: String, password: String): Result<FirebaseUser?> =
+        override suspend fun register(
+            email: String,
+            password: String,
+            preferredLanguage: String,
+        ): Result<FirebaseUser?> =
             runCatching {
                 firebaseAuth
                     .createUserWithEmailAndPassword(email, password)
                     .awaitResult()
                     .user
-                    ?.also { ensureUserRecord(it) }
+                    ?.also { ensureUserRecord(it, preferredLanguage) }
             }
 
         override suspend fun login(email: String, password: String): Result<FirebaseUser?> =
@@ -40,7 +44,7 @@ class FirebaseAuthRepositoryImpl
                     .signInWithEmailAndPassword(email, password)
                     .awaitResult()
                     .user
-                    ?.also { ensureUserRecord(it) }
+                    ?.also { ensureUserRecord(it, preferredLanguage = null) }
             }
 
         override suspend fun logout(): Result<Unit> =
@@ -79,7 +83,29 @@ class FirebaseAuthRepositoryImpl
 
         override suspend fun ensureCurrentUserRecord() {
             val currentUser = firebaseAuth.currentUser ?: return
-            ensureUserRecord(currentUser)
+            ensureUserRecord(currentUser, preferredLanguage = null)
+        }
+
+        override suspend fun updateUserLanguage(language: String): Result<Unit> =
+            runCatching {
+                val currentUser =
+                    firebaseAuth.currentUser ?: error("No authenticated user found.")
+                firestore
+                    .collection(USERS_COLLECTION)
+                    .document(currentUser.uid)
+                    .set(mapOf(USER_LANGUAGE_FIELD to language), SetOptions.merge())
+                    .await()
+            }
+
+        override suspend fun getCurrentUserProfile(): User? {
+            val currentUser = firebaseAuth.currentUser ?: return null
+            val snapshot =
+                firestore
+                    .collection(USERS_COLLECTION)
+                    .document(currentUser.uid)
+                    .get()
+                    .await()
+            return snapshot.toObject(User::class.java)
         }
 
         private fun determineRole(email: String): String =
@@ -89,12 +115,20 @@ class FirebaseAuthRepositoryImpl
                 else -> "Helper"
             }
 
-        private suspend fun ensureUserRecord(user: FirebaseUser) {
+        private suspend fun ensureUserRecord(
+            user: FirebaseUser,
+            preferredLanguage: String?,
+        ) {
             val email = user.email.orEmpty()
             val role = determineRole(email)
             val userRef = firestore.collection(USERS_COLLECTION).document(user.uid)
             val userSnapshot = userRef.get().await()
-            var careGroupId = userSnapshot.toObject(User::class.java)?.careGroupId
+            val existingUser = userSnapshot.toObject(User::class.java)
+            var careGroupId = existingUser?.careGroupId
+            val resolvedLanguage =
+                preferredLanguage
+                    ?: existingUser?.language
+                    ?: com.example.sgfuturenursingapp.ui.localization.AppLanguage.ENGLISH.code
 
             if (role == ADMIN_ROLE) {
                 val resolvedCareGroupId = careGroupId?.takeIf { it.isNotBlank() } ?: user.uid
@@ -129,6 +163,7 @@ class FirebaseAuthRepositoryImpl
                     email = email,
                     role = role,
                     careGroupId = careGroupId,
+                    language = resolvedLanguage,
                 )
 
             userRef.set(userRecord, SetOptions.merge()).await()
@@ -151,5 +186,6 @@ class FirebaseAuthRepositoryImpl
             const val USERS_COLLECTION = "users"
             const val CARE_GROUPS_COLLECTION = "care_groups"
             const val ADMIN_ROLE = "Admin"
+            const val USER_LANGUAGE_FIELD = "language"
         }
     }

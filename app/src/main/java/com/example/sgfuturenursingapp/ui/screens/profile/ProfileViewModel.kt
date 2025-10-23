@@ -3,6 +3,7 @@ package com.example.sgfuturenursingapp.ui.screens.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sgfuturenursingapp.domain.usecase.LogoutUserUseCase
+import com.example.sgfuturenursingapp.domain.usecase.UpdateUserLanguageUseCase
 import com.example.sgfuturenursingapp.ui.data.CareGroup
 import com.example.sgfuturenursingapp.ui.data.User
 import com.example.sgfuturenursingapp.ui.data.auth.AuthRepository
@@ -15,6 +16,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import com.example.sgfuturenursingapp.ui.localization.AppLanguage
+import com.example.sgfuturenursingapp.ui.localization.LanguageController
 
 data class ProfileUiState(
     val isLoading: Boolean = true,
@@ -28,6 +31,8 @@ data class ProfileUiState(
     val isLoggingOut: Boolean = false,
     val logoutError: String? = null,
     val logoutSuccess: Boolean = false,
+    val selectedLanguage: AppLanguage = AppLanguage.ENGLISH,
+    val isUpdatingLanguage: Boolean = false,
 )
 
 data class CareGroupMemberUi(
@@ -43,6 +48,7 @@ class ProfileViewModel
         private val authRepository: AuthRepository,
         private val firestore: FirebaseFirestore,
         private val logoutUserUseCase: LogoutUserUseCase,
+        private val updateUserLanguageUseCase: UpdateUserLanguageUseCase,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(ProfileUiState())
         val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
@@ -63,7 +69,7 @@ class ProfileViewModel
                 runCatching {
                     val currentUser =
                         authRepository.getCurrentUser()
-                            ?: error("\u5f53\u524d\u767b\u5f55\u4fe1\u606f\u5df2\u5931\u6548\uff0c\u8bf7\u91cd\u65b0\u767b\u5f55\u3002")
+                            ?: error("Current session has expired. Please log in again.")
 
                     val userSnapshot =
                         firestore
@@ -74,7 +80,7 @@ class ProfileViewModel
 
                     val userRecord =
                         userSnapshot.toObject(User::class.java)
-                            ?: error("\u65e0\u6cd5\u52a0\u8f7d\u7528\u6237\u8d44\u6599\u3002")
+                            ?: error("Unable to load user profile.")
 
                     val careGroupId = userRecord.careGroupId
                     val careGroup =
@@ -100,23 +106,25 @@ class ProfileViewModel
                                 val memberRecord = memberSnapshot.toObject(User::class.java)
                                 CareGroupMemberUi(
                                     uid = uid,
-                                    email = memberRecord?.email.orEmpty().ifBlank { "\u672a\u77e5\u6210\u5458 ($uid)" },
+                                    email = memberRecord?.email.orEmpty().ifBlank { "Unknown member ($uid)" },
                                     role = storedRole.ifBlank { memberRecord?.role.orEmpty() },
                                 )
                             }.sortedBy { it.email.lowercase() }
                         }
+                    val language = AppLanguage.fromCode(userRecord.language)
 
                     ProfileUiState(
                         isLoading = false,
                         email = userRecord.email.orEmpty(),
                         role = userRecord.role.orEmpty(),
                         careGroupName =
-                        careGroup?.groupName
+                            careGroup?.groupName
                                 ?.takeIf { it.isNotBlank() }
-                                ?: "\u672a\u52a0\u5165\u62a4\u7406\u7ec4",
+                                ?: "Not assigned to a care group",
                         members = members,
                         canManageTeam = userRecord.role.equals(ADMIN_ROLE, ignoreCase = true),
                         notificationEnabled = _uiState.value.notificationEnabled,
+                        selectedLanguage = language,
                     )
                 }.onSuccess { resolvedState ->
                     _uiState.value = resolvedState
@@ -124,7 +132,7 @@ class ProfileViewModel
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = throwable.message ?: "\u65e0\u6cd5\u52a0\u8f7d\u4e2a\u4eba\u8d44\u6599\uff0c\u8bf7\u7a0d\u540e\u518d\u8bd5\u3002",
+                            errorMessage = throwable.message ?: "Unable to load profile. Please try again later.",
                         )
                     }
                 }
@@ -158,7 +166,7 @@ class ProfileViewModel
                         _uiState.update {
                             it.copy(
                                 isLoggingOut = false,
-                                logoutError = throwable.message ?: "\u767b\u51fa\u5931\u8d25\uff0c\u8bf7\u7a0d\u540e\u91cd\u8bd5\u3002",
+                                logoutError = throwable.message ?: "Unable to log out right now. Please try again later.",
                             )
                         }
                     }
@@ -167,6 +175,31 @@ class ProfileViewModel
 
         fun consumeLogoutSuccess() {
             _uiState.update { it.copy(logoutSuccess = false) }
+        }
+
+        fun onLanguageSelected(language: AppLanguage) {
+            if (language == _uiState.value.selectedLanguage) return
+            _uiState.update { it.copy(isUpdatingLanguage = true, errorMessage = null) }
+            viewModelScope.launch {
+                val result = updateUserLanguageUseCase(language.code)
+                result
+                    .onSuccess {
+                        LanguageController.updateLanguage(language)
+                        _uiState.update {
+                            it.copy(
+                                selectedLanguage = language,
+                                isUpdatingLanguage = false,
+                            )
+                        }
+                    }.onFailure { throwable ->
+                        _uiState.update {
+                            it.copy(
+                                isUpdatingLanguage = false,
+                                errorMessage = throwable.message ?: "Unable to update language right now.",
+                            )
+                        }
+                    }
+            }
         }
 
         private companion object {
