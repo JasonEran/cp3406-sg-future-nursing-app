@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.ktlint.gradle)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
-    id("org.owasp.dependencycheck") version "10.0.3"
+    id("org.owasp.dependencycheck") version "12.1.0"
 }
 
 val newsApiBaseUrl = "https://newsapi.org/v2/"
