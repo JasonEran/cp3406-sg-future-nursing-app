@@ -66,6 +66,13 @@ jobs:
           NVD_API_KEY: 334a81b3-ba2e-4556-8cb8-76599930f209
         run: ./gradlew dependencyCheckAnalyze
 
+      - name: Upload dependency-check report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: app/build/reports/dependency-check
+
   build:
     runs-on: ubuntu-latest
     needs:
