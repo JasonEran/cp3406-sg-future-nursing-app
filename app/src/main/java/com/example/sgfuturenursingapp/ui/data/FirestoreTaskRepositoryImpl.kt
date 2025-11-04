@@ -1,6 +1,9 @@
 package com.example.sgfuturenursingapp.ui.data
 
+import com.example.sgfuturenursingapp.BuildConfig
 import com.example.sgfuturenursingapp.ui.data.auth.AuthRepository
+import com.example.sgfuturenursingapp.ui.demo.DemoContentProvider
+import com.example.sgfuturenursingapp.ui.demo.DemoModeController
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.snapshots
@@ -26,34 +29,42 @@ class FirestoreTaskRepositoryImpl
         private val authRepository: AuthRepository,
     ) : TaskRepository {
         override fun getTasks(): Flow<List<Task>> =
-            authRepository
-                .authStateFlow()
-                .flatMapLatest { user ->
-                    val userId = user?.uid ?: return@flatMapLatest flowOf(emptyList())
-                    userDocument(userId)
-                        .snapshots()
-                        .flatMapLatest { userSnapshot ->
-                            val careGroupId =
-                                userSnapshot
-                                    .toObject<User>()
-                                    ?.careGroupId
-                            if (careGroupId.isNullOrBlank()) {
-                                flowOf(emptyList())
-                            } else {
-                                careGroupTasksCollection(careGroupId)
-                                    .orderBy(TASK_FIELD_ID, Query.Direction.ASCENDING)
-                                    .snapshotFlow()
-                                    .map { snapshot ->
-                                        snapshot.documents
-                                            .mapNotNull { document ->
-                                                document.toObject<TaskFirestoreDto>()?.toDomain()
-                                            }.sortedWith(
-                                                compareByDescending<Task> { it.priority }
-                                                    .thenBy { it.time },
-                                            )
-                                    }.distinctUntilChanged()
+            DemoModeController
+                .isDemoModeEnabled
+                .flatMapLatest { isDemoMode ->
+                    if (isDemoMode && BuildConfig.DEBUG) {
+                        flowOf(DemoContentProvider.tasks)
+                    } else {
+                        authRepository
+                            .authStateFlow()
+                            .flatMapLatest { user ->
+                                val userId = user?.uid ?: return@flatMapLatest flowOf(emptyList())
+                                userDocument(userId)
+                                    .snapshots()
+                                    .flatMapLatest { userSnapshot ->
+                                        val careGroupId =
+                                            userSnapshot
+                                                .toObject<User>()
+                                                ?.careGroupId
+                                        if (careGroupId.isNullOrBlank()) {
+                                            flowOf(emptyList())
+                                        } else {
+                                            careGroupTasksCollection(careGroupId)
+                                                .orderBy(TASK_FIELD_ID, Query.Direction.ASCENDING)
+                                                .snapshotFlow()
+                                                .map { snapshot ->
+                                                    snapshot.documents
+                                                        .mapNotNull { document ->
+                                                            document.toObject<TaskFirestoreDto>()?.toDomain()
+                                                        }.sortedWith(
+                                                            compareByDescending<Task> { it.priority }
+                                                                .thenBy { it.time },
+                                                        )
+                                                }.distinctUntilChanged()
+                                        }
+                                    }
                             }
-                        }
+                    }
                 }.flowOn(Dispatchers.IO)
 
         override suspend fun getTaskById(taskId: Int): Task? {

@@ -65,8 +65,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.sgfuturenursingapp.ui.components.TaskItem
-import com.example.sgfuturenursingapp.ui.data.DummyDataProvider
 import com.example.sgfuturenursingapp.ui.data.Task
+import com.example.sgfuturenursingapp.ui.demo.DemoContentProvider
 import com.example.sgfuturenursingapp.ui.theme.CP3406SGFutureNursingAppTheme
 import com.example.sgfuturenursingapp.ui.theme.SuccessGreen
 
@@ -469,7 +469,7 @@ private fun TaskDetailPane(
 fun DashboardScreenPreview() {
     val previewState =
         DashboardUiState(
-            tasks = DummyDataProvider.tasks,
+            tasks = DemoContentProvider.tasks,
             userRole = "Admin",
             isLoading = false,
         )
@@ -495,7 +495,7 @@ fun DashboardScreenPreview() {
 fun DashboardScreenExpandedPreview() {
     val previewState =
         DashboardUiState(
-            tasks = DummyDataProvider.tasks,
+            tasks = DemoContentProvider.tasks,
             userRole = "Admin",
             isLoading = false,
         )

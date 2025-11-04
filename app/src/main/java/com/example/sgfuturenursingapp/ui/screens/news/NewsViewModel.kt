@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sgfuturenursingapp.network.model.NewsArticle
 import com.example.sgfuturenursingapp.ui.data.news.NewsRepository
+import com.example.sgfuturenursingapp.ui.demo.DemoContentProvider
+import com.example.sgfuturenursingapp.ui.demo.DemoModeController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +36,16 @@ class NewsViewModel
                 newsRepository.observeHealthNews(),
                 isRefreshing,
                 errorState,
-            ) { articles, refreshing, error ->
+                DemoModeController.isDemoModeEnabled,
+            ) { articles, refreshing, error, isDemoMode ->
+                if (isDemoMode) {
+                    return@combine NewsUiState(
+                        articles = DemoContentProvider.newsArticles,
+                        isLoading = false,
+                        isRefreshing = false,
+                        errorMessage = null,
+                    )
+                }
                 NewsUiState(
                     articles = articles,
                     isLoading = refreshing && articles.isEmpty(),
@@ -53,6 +64,11 @@ class NewsViewModel
 
         fun refreshNews(country: String = "us") {
             viewModelScope.launch {
+                if (DemoModeController.isDemoModeEnabled.value) {
+                    isRefreshing.value = false
+                    errorState.value = null
+                    return@launch
+                }
                 isRefreshing.value = true
                 val result = newsRepository.refreshHealthNews(country = country)
                 result

@@ -25,8 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.sgfuturenursingapp.ui.data.DummyDataProvider
 import com.example.sgfuturenursingapp.ui.data.Task
+import com.example.sgfuturenursingapp.ui.demo.DemoContentProvider
 import com.example.sgfuturenursingapp.ui.theme.CP3406SGFutureNursingAppTheme
 import com.example.sgfuturenursingapp.ui.theme.SuccessGreen
 
@@ -95,7 +95,7 @@ fun TaskItem(
 @Composable
 fun TaskItemPreview() {
     CP3406SGFutureNursingAppTheme {
-        TaskItem(task = DummyDataProvider.tasks.first(), onCompleteClick = {})
+        TaskItem(task = DemoContentProvider.tasks.first(), onCompleteClick = {})
     }
 }
 

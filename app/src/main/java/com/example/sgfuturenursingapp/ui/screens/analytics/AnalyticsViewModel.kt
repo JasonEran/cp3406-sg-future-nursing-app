@@ -8,6 +8,8 @@ import com.example.sgfuturenursingapp.ui.data.CareGroup
 import com.example.sgfuturenursingapp.ui.data.Task
 import com.example.sgfuturenursingapp.ui.data.User
 import com.example.sgfuturenursingapp.ui.data.auth.AuthRepository
+import com.example.sgfuturenursingapp.ui.demo.DemoContentProvider
+import com.example.sgfuturenursingapp.ui.demo.DemoModeController
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -71,6 +73,33 @@ class AnalyticsViewModel
                         pieSegments = emptyList(),
                         helperTaskCounts = emptyList(),
                     )
+                }
+
+                if (DemoModeController.isDemoModeEnabled.value) {
+                    val demo = DemoContentProvider.analytics
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            accessDenied = false,
+                            pieSegments =
+                                listOf(
+                                    AnalyticsPieSegment(R.string.analytics_segment_completed, demo.completed),
+                                    AnalyticsPieSegment(R.string.analytics_segment_overdue, demo.overdue),
+                                    AnalyticsPieSegment(R.string.analytics_segment_pending, demo.pending),
+                                ),
+                            helperTaskCounts =
+                                demo.helperTotals.mapIndexed { index, (name, count) ->
+                                    HelperTaskCount(
+                                        memberId = "demo-helper-$index",
+                                        displayName = name,
+                                        completedCount = count,
+                                    )
+                                },
+                            hasHelperData = demo.helperTotals.isNotEmpty(),
+                            errorMessageRes = null,
+                        )
+                    }
+                    return@launch
                 }
 
                 runCatching {

@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sgfuturenursingapp.BuildConfig
+import com.example.sgfuturenursingapp.ui.demo.DemoModeController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -113,7 +114,10 @@ fun AdminLoginScreen(
             onEmailChanged = viewModel::onEmailChanged,
             onPasswordChanged = viewModel::onPasswordChanged,
             onLogin = viewModel::login,
-            onSkipLogin = onAdminLoginSuccess,
+            onSkipLogin = {
+                DemoModeController.enableDemoMode()
+                onAdminLoginSuccess()
+            },
             modifier =
                 Modifier
                     .fillMaxSize()

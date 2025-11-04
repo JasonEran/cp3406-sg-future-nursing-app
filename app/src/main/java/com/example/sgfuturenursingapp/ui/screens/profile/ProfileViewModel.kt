@@ -8,6 +8,8 @@ import com.example.sgfuturenursingapp.domain.usecase.UpdateUserLanguageUseCase
 import com.example.sgfuturenursingapp.ui.data.CareGroup
 import com.example.sgfuturenursingapp.ui.data.User
 import com.example.sgfuturenursingapp.ui.data.auth.AuthRepository
+import com.example.sgfuturenursingapp.ui.demo.DemoContentProvider
+import com.example.sgfuturenursingapp.ui.demo.DemoModeController
 import com.example.sgfuturenursingapp.ui.localization.AppLanguage
 import com.example.sgfuturenursingapp.ui.localization.LanguageController
 import com.google.firebase.firestore.FirebaseFirestore
@@ -66,6 +68,30 @@ class ProfileViewModel
                         errorMessage = null,
                         errorMessageRes = null,
                     )
+                }
+
+                if (DemoModeController.isDemoModeEnabled.value) {
+                    val demo = DemoContentProvider.profile
+                    _uiState.update { current ->
+                        current.copy(
+                            isLoading = false,
+                            email = demo.email,
+                            role = demo.role,
+                            careGroupName = demo.careGroupName,
+                            members =
+                                demo.members.mapIndexed { index, member ->
+                                    CareGroupMemberUi(
+                                        uid = "demo-member-$index",
+                                        email = member.email,
+                                        role = member.role,
+                                    )
+                                },
+                            canManageTeam = demo.role.equals(ADMIN_ROLE, ignoreCase = true),
+                            errorMessage = null,
+                            errorMessageRes = null,
+                        )
+                    }
+                    return@launch
                 }
 
                 val currentUser =
@@ -170,6 +196,19 @@ class ProfileViewModel
             if (language == currentState.selectedLanguage) return
             val previousLanguage = currentState.selectedLanguage
 
+            if (DemoModeController.isDemoModeEnabled.value) {
+                LanguageController.updateLanguage(language)
+                _uiState.update {
+                    it.copy(
+                        selectedLanguage = language,
+                        errorMessage = null,
+                        errorMessageRes = null,
+                        isUpdatingLanguage = false,
+                    )
+                }
+                return
+            }
+
             _uiState.update {
                 it.copy(
                     selectedLanguage = language,
@@ -205,6 +244,22 @@ class ProfileViewModel
 
         fun logout() {
             viewModelScope.launch {
+                if (DemoModeController.isDemoModeEnabled.value) {
+                    DemoModeController.disableDemoMode()
+                    _uiState.update {
+                        it.copy(
+                            isLoggingOut = false,
+                            logoutSuccess = true,
+                            errorMessage = null,
+                            errorMessageRes = null,
+                            email = "",
+                            role = "",
+                            members = emptyList(),
+                        )
+                    }
+                    return@launch
+                }
+
                 _uiState.update {
                     it.copy(
                         isLoggingOut = true,

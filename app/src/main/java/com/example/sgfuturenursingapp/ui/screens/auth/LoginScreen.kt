@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sgfuturenursingapp.BuildConfig
+import com.example.sgfuturenursingapp.ui.demo.DemoModeController
 
 @Composable
 fun LoginScreen(
@@ -269,6 +270,7 @@ private fun LoginForm(
             OutlinedButton(
                 onClick = {
                     focusManager.clearFocus()
+                    DemoModeController.enableDemoMode()
                     onSkipLogin()
                 },
                 modifier =

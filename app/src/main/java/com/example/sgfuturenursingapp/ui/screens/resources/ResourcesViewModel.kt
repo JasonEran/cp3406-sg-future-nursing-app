@@ -3,6 +3,8 @@ package com.example.sgfuturenursingapp.ui.screens.resources
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sgfuturenursingapp.ui.data.ResourceArticle
+import com.example.sgfuturenursingapp.ui.demo.DemoContentProvider
+import com.example.sgfuturenursingapp.ui.demo.DemoModeController
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ktx.snapshots
@@ -62,6 +64,12 @@ class ResourcesViewModel
         private fun loadArticlesForCategory(category: ResourceCategory) {
             articlesJob?.cancel()
             _uiState.setLoading()
+            if (DemoModeController.isDemoModeEnabled.value) {
+                val demoArticles =
+                    DemoContentProvider.resourceArticles.filter { it.category == category.id }
+                _uiState.updateArticles(demoArticles)
+                return
+            }
             articlesJob =
                 viewModelScope.launch {
                     firestore

@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.example.sgfuturenursingapp.ui.demo.DemoModeController
 import com.example.sgfuturenursingapp.ui.localization.AppLanguage
 import com.example.sgfuturenursingapp.ui.localization.LanguageController
 
@@ -113,6 +114,7 @@ class AuthViewModel
                 val result = loginUserUseCase(email, password)
                 result.fold(
                     onSuccess = { user ->
+                        DemoModeController.disableDemoMode()
                         _uiState.update {
                             it.copy(
                                 userEmail = user?.email ?: it.userEmail,
@@ -167,6 +169,7 @@ class AuthViewModel
                 val result = registerUserUseCase(email, password, language.code)
                 result.fold(
                     onSuccess = { user ->
+                        DemoModeController.disableDemoMode()
                         _uiState.update {
                             it.copy(
                                 userEmail = user?.email ?: it.userEmail,
@@ -201,6 +204,7 @@ class AuthViewModel
                 val result = logoutUserUseCase()
                 result.fold(
                     onSuccess = {
+                        DemoModeController.disableDemoMode()
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
@@ -253,6 +257,7 @@ class AuthViewModel
 
                 observeAuthStateUseCase().collect { user ->
                     if (user != null) {
+                        DemoModeController.disableDemoMode()
                         try {
                             ensureCurrentUserRecordUseCase()
                         } catch (ignored: Throwable) {
