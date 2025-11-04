@@ -96,8 +96,28 @@ app/
 ## UI and UX Notes
 
 - The Material 3 theme under `ui/theme` includes dynamic color hooks and typography suited for accessibility.
-- Replace the placeholder images referenced in `docs/images/dashboard.png` and `docs/images/care_plan.png` with fresh emulator captures when presenting; the layout automatically adapts to tablets and foldables.
+- Replace the placeholder images referenced in `docs/dashboard.png` and `docs/care_plan.png` with fresh emulator captures when presenting; the layout automatically adapts to tablets and foldables.
+- Capture the full demo set after enabling the debug skip-login shortcut and place files as follows:
+  - `docs/dashboard.png` – dashboard today view.
+  - `docs/care_plan.png` – task detail or care plan workflow.
+  - `docs/news.png` – health news feed with cached stories.
+  - `docs/resources.png` – resource centre with category tabs.
+  - `docs/profile.png` – profile screen showing team roster and language toggle.
 - Motion specs leverage `animateContentSize`, `AnimatedVisibility`, and low-emphasis transitions to keep updates legible for older adults.
+
+## Demo Gallery
+
+> Screenshots captured on November 4, 2025 using the debug skip-login fixtures.
+
+![Dashboard overview](docs/dashboard.png)
+
+![Care plan task detail](docs/care_plan.png)
+
+![Health news feed](docs/news.png)
+
+![Resource centre categories](docs/resources.png)
+
+![Profile and team roster](docs/profile.png)
 
 ## Getting Started
 
