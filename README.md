@@ -109,15 +109,19 @@ app/
 
 > Screenshots captured on November 4, 2025 using the debug skip-login fixtures.
 
-![Dashboard overview](docs/dashboard.png)
-
-![Care plan task detail](docs/care_plan.png)
-
-![Health news feed](docs/news.png)
-
-![Resource centre categories](docs/resources.png)
-
-![Profile and team roster](docs/profile.png)
+<table>
+  <tr>
+    <td><img src="docs/dashboard.png" width="420" alt="Dashboard overview" /></td>
+    <td><img src="docs/care_plan.png" width="420" alt="Care plan task detail" /></td>
+  </tr>
+  <tr>
+    <td><img src="docs/news.png" width="420" alt="Health news feed" /></td>
+    <td><img src="docs/resources.png" width="420" alt="Resource centre categories" /></td>
+  </tr>
+  <tr>
+    <td><img src="docs/profile.png" width="420" alt="Profile and team roster" /></td>
+  </tr>
+</table>
 
 ## Getting Started
 
